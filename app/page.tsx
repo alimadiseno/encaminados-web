@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import Image from "next/image";
-import { getFeaturedRetreat } from "@/data/retreats";
+import { getFeaturedRetreat, fechasLabel } from "@/data/retreats";
 import Reveal from "@/components/Reveal";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -15,14 +16,49 @@ import Footer from "@/components/Footer";
 import FloatingWhatsapp from "@/components/FloatingWhatsapp";
 import MobileCtaBar from "@/components/MobileCtaBar";
 
+// El sitio es una sola landing, así que se regenera con el resto del build
+// (Cloudflare Workers también acepta este `revalidate`: sirve la versión
+// cacheada y la refresca en segundo plano pasado este tiempo). Cuando exista
+// el panel de administración, un guardado ahí puede llamar a una ruta de
+// revalidación bajo demanda en vez de esperar este plazo.
+export const revalidate = 300;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const retreat = await getFeaturedRetreat();
+  const title = retreat.seo.titulo || `${retreat.nombre} · ${retreat.bajada}`;
+  const description =
+    retreat.seo.descripcion ||
+    `${retreat.bajada} ${fechasLabel(retreat)}, en ${retreat.lugar}.`;
+  const ogImage = retreat.seo.imagenUrl || retreat.heroImagenUrl;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      siteName: retreat.nombre,
+      locale: "es_CL",
+      title,
+      description,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
 /**
  * Landing del retiro destacado. El día que existan varios retiros a la vez,
  * esta misma composición de secciones se muda a app/eventos/[slug]/page.tsx
  * (recibiendo el retiro por slug en vez de "el destacado"), y esta ruta
  * pasa a listar retreats.map() como cards hacia esas páginas de detalle.
  */
-export default function Home() {
-  const retreat = getFeaturedRetreat();
+export default async function Home() {
+  const retreat = await getFeaturedRetreat();
 
   return (
     <>
@@ -41,7 +77,7 @@ export default function Home() {
         <div className="flex justify-center bg-cream pt-6">
           <Reveal>
             <Image
-              src="/images/section-divider.webp"
+              src={retreat.sectionDividerImagenUrl}
               alt=""
               width={339}
               height={151}
@@ -58,7 +94,7 @@ export default function Home() {
         </div>
         <TestimonialsSection retreat={retreat} />
         <GuidesSection retreat={retreat} />
-        <PhotoStrip />
+        <PhotoStrip retreat={retreat} />
         <HistorySection retreat={retreat} />
         <LogisticsSection retreat={retreat} />
         <FaqSection retreat={retreat} />

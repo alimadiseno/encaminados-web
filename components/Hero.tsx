@@ -9,7 +9,7 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
       className="relative flex min-h-[600px] flex-col items-center justify-center overflow-hidden pt-28 pb-16 lg:min-h-[750px] lg:pb-10"
     >
       <Image
-        src="/images/hero-bg.webp"
+        src={retreat.heroImagenUrl}
         alt=""
         fill
         priority

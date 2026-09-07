@@ -56,6 +56,12 @@ export interface Contacto {
   email: string;
 }
 
+export interface Seo {
+  titulo?: string;
+  descripcion?: string;
+  imagenUrl?: string;
+}
+
 export interface RetreatEvent {
   slug: string;
   nombre: string;
@@ -81,6 +87,13 @@ export interface RetreatEvent {
   historia: {
     parrafos: string[];
     pendiente: boolean;
+    imagenUrl: string;
   };
   faq: FaqItem[];
+  /** Fotos de la imagen del hero y del logo entre hero y "Qué es". */
+  heroImagenUrl: string;
+  sectionDividerImagenUrl: string;
+  /** Franja decorativa entre "guías" e "historia". */
+  fotosDecorativas: string[];
+  seo: Seo;
 }

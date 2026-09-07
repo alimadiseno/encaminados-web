@@ -1,161 +1,200 @@
+import { getSupabaseClient } from "@/lib/supabase";
 import type { RetreatEvent } from "@/types/retreat";
 
-// Se declaran aparte (y no inline en el objeto de abajo) porque se reusan en
-// más de un lugar: la ficha de logística y la respuesta del FAQ "¿Cómo llegamos?".
-const comoLlegar =
-  "Al lado del Santuario de Lo Vásquez, camino a Viña del Mar, pasado Casablanca. Cerca de una hora desde Santiago.";
-const mapaUrl = "https://www.google.com/maps/search/?api=1&query=Santuario+de+Lo+V%C3%A1squez";
-
 /**
- * Único retiro activo hoy. El resto del sitio nunca importa este objeto
- * directo — siempre a través de getFeaturedRetreat()/getRetreatBySlug(),
- * para que el día que existan varios retiros el cambio sea agregar
- * elementos a este arreglo, no reescribir componentes.
+ * El contenido del sitio vive en Supabase (ver supabase/migrations/), no en
+ * este archivo — acá solo queda la consulta que arma un `RetreatEvent` a
+ * partir de las tablas, más un par de funciones puras que operan sobre ese
+ * objeto. El resto del sitio nunca habla con Supabase directo: siempre pasa
+ * por `getFeaturedRetreat()`, así que el día que haya más de un retiro a la
+ * vez, el cambio es acá adentro, no en cada componente.
  */
-export const retreats: RetreatEvent[] = [
-  {
-    slug: "2026-segundo-semestre",
-    nombre: "Encaminados",
-    bajada: "Un fin de semana para volver a caminar juntos.",
-    fechas: [
-      { label: "2 al 4 de octubre", start: "2026-10-02", end: "2026-10-04" },
-      { label: "6 al 8 de noviembre", start: "2026-11-06", end: "2026-11-08" },
-    ],
-    lugar: "Centro de Espiritualidad de Lo Vásquez",
-    comoLlegar,
-    mapaUrl,
-    horaInicio: "19:00 del viernes",
-    horaTermino: "12:30 del domingo",
-    costo: "$180.000 por matrimonio",
-    incluye: "alojamiento, sábanas, materiales y todas las comidas",
-    cuotasDisponibles: true,
-    cupos: "Cupos Limitados",
-    cuposDescripcion:
-      "Para asegurar un espacio íntimo y de calidad para cada pareja, trabajamos con grupos reducidos.",
-    inscripcionUrl:
-      "https://docs.google.com/forms/d/e/1FAIpQLSf9D6pJ4g1i8D4hG951h7mHcEVqYtKsrczb5LJnE4xtU76G-w/viewform",
-    contacto: {
-      whatsapp: "+56 9 9359 5766",
-      whatsappMensaje: "Hola, tenemos una duda sobre Encaminados.",
-      email: "gvicuna@lcred.org",
-    },
-    ideas: [
-      {
-        titulo: "Para los dos",
-        descripcion:
-          "Se participa en matrimonio, de principio a fin. Un espacio diseñado exclusivamente para reencontrarse en lo íntimo.",
-      },
-      {
-        titulo: "Sin currículum previo",
-        descripcion:
-          "No hay que saber nada ni haber hecho nada antes. El retiro te recibe exactamente donde tu matrimonio se encuentra hoy.",
-      },
-      {
-        titulo: "Fuera de todo",
-        descripcion:
-          "Del viernes en la tarde al domingo al mediodía. Sin niños, sin pantallas, sin pendientes. Tres días para lo verdaderamente importante.",
-      },
-    ],
-    videos: [
-      {
-        id: "v1",
-        nombre: "María y José",
-        cita: "Definitivamente hay un antes y un después; un verdadero punto de inflexión.",
-      },
-      {
-        id: "v2",
-        nombre: "Ana y Pedro",
-        cita: "Una experiencia realmente mágica; momentos para estar tranquilos, conversar y reconectar.",
-      },
-      {
-        id: "v3",
-        nombre: "Claudia y Diego",
-        cita: "Es una oportunidad para volver a enfocar prioridades, reconectar en pareja y estar un rato con Dios.",
-      },
-    ],
-    guias: [
-      {
-        id: "sacerdote",
-        nombre: "[Pendiente: nombre del sacerdote]",
-        rol: "Director Espiritual",
-        fotoUrl: "/images/guia-sacerdote.webp",
-        fotoForma: "arco",
-      },
-      {
-        id: "matrimonio-guia",
-        nombre: "[Pendiente: nombre del matrimonio guía]",
-        rol: "Matrimonio Guía",
-        fotoUrl: "/images/guia-matrimonio.webp",
-        fotoForma: "circulo",
-      },
-    ],
-    guiasIntro:
-      "[Texto pendiente de confirmar con el cliente: quiénes son las personas que guían el retiro, cuál es su rol, y qué se puede esperar de ellos.]",
-    historia: {
-      pendiente: true,
-      parrafos: [
-        "[Texto pendiente de entrega por el cliente. Extensión objetivo: 200–300 palabras, tono narrativo en primera persona plural, contado como se lo contarían a un amigo en la mesa: quiénes fueron los primeros matrimonios, qué los movió a armar el primer fin de semana, y qué pasó después.]",
-      ],
-    },
-    faq: [
-      {
-        pregunta: "¿Cuándo y dónde es?",
-        respuesta:
-          "Hay dos fechas este semestre y se elige una al momento de inscribirse.",
-      },
-      {
-        pregunta: "¿A qué hora llegamos y a qué hora terminamos?",
-        respuesta: "Los esperamos el viernes y terminamos el domingo. Alcanzan a llegar a almorzar a la casa.",
-      },
-      {
-        pregunta: "¿Cómo llegamos?",
-        respuesta: `Cada matrimonio llega por su cuenta. ${comoLlegar}`,
-        enlace: { texto: "Ver en el mapa", href: mapaUrl },
-      },
-      {
-        pregunta: "¿Cuánto cuesta y qué incluye?",
-        respuesta:
-          "El cupo se reserva con una transferencia o con el link de pago, del total o de la mitad; también se puede pagar en cuotas. Si el costo es un problema, escríbannos antes: eso se conversa y se arregla.",
-      },
-      {
-        pregunta: "¿Cómo nos inscribimos?",
-        respuesta:
-          "Se completa un formulario por matrimonio y se reserva el cupo con el pago. El resto de los detalles les llega después por correo.",
-      },
-      {
-        pregunta: "¿Qué tenemos que llevar?",
-        respuesta:
-          "Ropa cómoda para tres días, y nada más. No hay que preparar nada, ni leer nada, ni traer nada especial. Vengan como están.",
-      },
-      {
-        pregunta: "¿Hay que participar de todo?",
-        respuesta:
-          "El fin de semana está pensado como una sola cosa de principio a fin y se disfruta mucho más así. Nadie los va a obligar a nada.",
-      },
-      {
-        pregunta: "¿Se puede ir sin mi cónyuge?",
-        respuesta: "No. Encaminados es para los dos: casi todo lo que pasa ahí pasa entre ustedes.",
-      },
-      {
-        pregunta: "¿Qué pasa si no somos muy practicantes?",
-        respuesta:
-          "Nada. Van matrimonios de todo tipo y a nadie se le pregunta por eso. No hay que saber rezar, ni ir a misa, ni estar de acuerdo con todo. Basta con querer estar.",
-      },
-      {
-        pregunta: "¿Podemos llevar a los niños?",
-        respuesta:
-          "El fin de semana es solo para los dos. Vale la pena dejar todo organizado en la casa: son tres días para ustedes.",
-      },
-    ],
-  },
-];
 
-export function getFeaturedRetreat(): RetreatEvent {
-  return retreats[0];
+// Formas de las filas tal como salen de Postgres (snake_case). Se declaran
+// a mano porque el proyecto no genera tipos desde el esquema de Supabase —
+// si en algún momento se agrega `supabase gen types`, esto se puede
+// reemplazar por los tipos generados.
+interface FilaOrdenable {
+  orden: number;
+}
+interface FilaFecha extends FilaOrdenable {
+  label: string;
+  fecha_inicio: string;
+  fecha_termino: string;
+}
+interface FilaIdea extends FilaOrdenable {
+  titulo: string;
+  descripcion: string;
+}
+interface FilaVideo extends FilaOrdenable {
+  id: string;
+  nombre: string;
+  cita: string;
+  youtube_id: string | null;
+}
+interface FilaGuia extends FilaOrdenable {
+  id: string;
+  nombre: string;
+  rol: string;
+  foto_url: string | null;
+  foto_forma: string;
+}
+interface FilaFaq extends FilaOrdenable {
+  pregunta: string;
+  respuesta: string;
+  enlace_texto: string | null;
+  enlace_href: string | null;
+}
+interface FilaFoto extends FilaOrdenable {
+  foto_url: string;
 }
 
-export function getRetreatBySlug(slug: string): RetreatEvent | undefined {
-  return retreats.find((r) => r.slug === slug);
+interface FilaRetreat {
+  slug: string;
+  nombre: string;
+  bajada: string;
+  lugar: string;
+  como_llegar: string;
+  mapa_url: string;
+  hora_inicio: string;
+  hora_termino: string;
+  costo: string;
+  incluye: string;
+  cuotas_disponibles: boolean;
+  cupos: string;
+  cupos_descripcion: string;
+  inscripcion_url: string;
+  whatsapp: string;
+  whatsapp_mensaje: string;
+  email: string;
+  guias_intro: string;
+  historia_texto: string;
+  historia_pendiente: boolean;
+  hero_imagen_url: string | null;
+  section_divider_imagen_url: string | null;
+  historia_imagen_url: string | null;
+  seo_titulo: string | null;
+  seo_descripcion: string | null;
+  seo_imagen_url: string | null;
+  retreat_fechas: FilaFecha[];
+  retreat_ideas: FilaIdea[];
+  retreat_videos: FilaVideo[];
+  retreat_guias: FilaGuia[];
+  retreat_faq: FilaFaq[];
+  retreat_photo_strip: FilaFoto[];
+}
+
+function partirParrafos(texto: string): string[] {
+  const partes = texto
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return partes.length > 0 ? partes : [texto];
+}
+
+async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("retreats")
+    .select(
+      `*,
+      retreat_fechas ( label, fecha_inicio, fecha_termino, orden ),
+      retreat_ideas ( titulo, descripcion, orden ),
+      retreat_videos ( id, nombre, cita, youtube_id, orden ),
+      retreat_guias ( id, nombre, rol, foto_url, foto_forma, orden ),
+      retreat_faq ( pregunta, respuesta, enlace_texto, enlace_href, orden ),
+      retreat_photo_strip ( foto_url, orden )`,
+    )
+    .eq("slug", slug)
+    .single();
+
+  if (error || !data) {
+    if (error) console.error("Error cargando el retiro desde Supabase:", error.message);
+    return undefined;
+  }
+
+  const retreat = data as unknown as FilaRetreat;
+  const ordenar = <T extends FilaOrdenable>(rows: T[]) => [...rows].sort((a, b) => a.orden - b.orden);
+
+  return {
+    slug: retreat.slug,
+    nombre: retreat.nombre,
+    bajada: retreat.bajada,
+    lugar: retreat.lugar,
+    comoLlegar: retreat.como_llegar,
+    mapaUrl: retreat.mapa_url,
+    horaInicio: retreat.hora_inicio,
+    horaTermino: retreat.hora_termino,
+    costo: retreat.costo,
+    incluye: retreat.incluye,
+    cuotasDisponibles: retreat.cuotas_disponibles,
+    cupos: retreat.cupos,
+    cuposDescripcion: retreat.cupos_descripcion,
+    inscripcionUrl: retreat.inscripcion_url,
+    contacto: {
+      whatsapp: retreat.whatsapp,
+      whatsappMensaje: retreat.whatsapp_mensaje,
+      email: retreat.email,
+    },
+    heroImagenUrl: retreat.hero_imagen_url ?? "",
+    sectionDividerImagenUrl: retreat.section_divider_imagen_url ?? "",
+    fotosDecorativas: ordenar(retreat.retreat_photo_strip).map((f) => f.foto_url),
+    seo: {
+      titulo: retreat.seo_titulo ?? undefined,
+      descripcion: retreat.seo_descripcion ?? undefined,
+      imagenUrl: retreat.seo_imagen_url ?? undefined,
+    },
+    fechas: ordenar(retreat.retreat_fechas).map((f) => ({
+      label: f.label,
+      start: f.fecha_inicio,
+      end: f.fecha_termino,
+    })),
+    ideas: ordenar(retreat.retreat_ideas).map((i) => ({
+      titulo: i.titulo,
+      descripcion: i.descripcion,
+    })),
+    videos: ordenar(retreat.retreat_videos).map((v) => ({
+      id: v.id,
+      nombre: v.nombre,
+      cita: v.cita,
+      youtubeId: v.youtube_id ?? undefined,
+    })),
+    guias: ordenar(retreat.retreat_guias).map((g) => ({
+      id: g.id,
+      nombre: g.nombre,
+      rol: g.rol,
+      fotoUrl: g.foto_url ?? "",
+      fotoForma: g.foto_forma as "arco" | "circulo",
+    })),
+    guiasIntro: retreat.guias_intro,
+    historia: {
+      parrafos: partirParrafos(retreat.historia_texto),
+      pendiente: retreat.historia_pendiente,
+      imagenUrl: retreat.historia_imagen_url ?? "",
+    },
+    faq: ordenar(retreat.retreat_faq).map((f) => ({
+      pregunta: f.pregunta,
+      respuesta: f.respuesta,
+      enlace: f.enlace_texto && f.enlace_href ? { texto: f.enlace_texto, href: f.enlace_href } : undefined,
+    })),
+  };
+}
+
+const RETIRO_DESTACADO = "2026-segundo-semestre";
+
+export async function getFeaturedRetreat(): Promise<RetreatEvent> {
+  const retreat = await cargarRetreat(RETIRO_DESTACADO);
+  if (!retreat) {
+    throw new Error(
+      `No se encontró el retiro "${RETIRO_DESTACADO}" en Supabase. ¿Corriste supabase/migrations/0002_seed.sql?`,
+    );
+  }
+  return retreat;
+}
+
+export async function getRetreatBySlug(slug: string): Promise<RetreatEvent | undefined> {
+  return cargarRetreat(slug);
 }
 
 export function anioDelRetiro(retreat: RetreatEvent): string {
