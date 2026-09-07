@@ -93,7 +93,7 @@ function partirParrafos(texto: string): string[] {
 }
 
 async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
-  const supabase = getSupabaseClient();
+  const supabase = await getSupabaseClient();
 
   const { data, error } = await supabase
     .from("retreats")
