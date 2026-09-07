@@ -30,7 +30,7 @@ export default function HistorySection({ retreat }: { retreat: RetreatEvent }) {
         </div>
 
         <Reveal delay={120} className="relative h-[280px] w-full flex-1 overflow-hidden rounded-tl-[180px] rounded-tr-[20px] rounded-br-[180px] rounded-bl-[20px] sm:h-[380px]">
-          <Image src="/images/historia.png" alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+          <Image src="/images/historia.webp" alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
         </Reveal>
       </div>
     </section>

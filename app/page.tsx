@@ -41,7 +41,7 @@ export default function Home() {
         <div className="flex justify-center bg-cream pt-6">
           <Reveal>
             <Image
-              src="/images/section-divider.png"
+              src="/images/section-divider.webp"
               alt=""
               width={339}
               height={151}

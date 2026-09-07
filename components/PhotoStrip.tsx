@@ -2,11 +2,11 @@ import Image from "next/image";
 import Reveal from "./Reveal";
 
 const PHOTOS = [
-  { src: "/images/photo-strip-1.png", w: "min-w-[220px] sm:flex-[420]" },
-  { src: "/images/photo-strip-2.png", w: "min-w-[160px] sm:flex-[260]" },
-  { src: "/images/photo-strip-3.png", w: "min-w-[200px] sm:flex-[340]" },
-  { src: "/images/photo-strip-4.png", w: "min-w-[140px] sm:flex-[220]" },
-  { src: "/images/photo-strip-5.png", w: "min-w-[180px] sm:flex-[300]" },
+  { src: "/images/photo-strip-1.webp", w: "min-w-[220px] sm:flex-[420]" },
+  { src: "/images/photo-strip-2.webp", w: "min-w-[160px] sm:flex-[260]" },
+  { src: "/images/photo-strip-3.webp", w: "min-w-[200px] sm:flex-[340]" },
+  { src: "/images/photo-strip-4.webp", w: "min-w-[140px] sm:flex-[220]" },
+  { src: "/images/photo-strip-5.webp", w: "min-w-[180px] sm:flex-[300]" },
 ];
 
 /** Franja decorativa de fotos entre "guías" e "historia" — puramente visual, sin copy. */
