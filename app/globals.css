@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Paleta tomada del diseño de Figma ---- */
+  --color-cream: #faf6eb; /* bg/primary */
+  --color-sage: #d1ded7; /* bg/section1 */
+  --color-peach: #fde1cb; /* bg/section2, text/on-muted */
+  --color-lavender: #ecd9ea; /* bg/section3 */
+  --color-ink: #15100e; /* text/primary, border/primary */
+  --color-terracotta: #cd5f37; /* text/accent, action/primary */
+  --color-block: #e3ebe0; /* surface/block */
+  --color-card: #f9eee8; /* surface/card */
+  --color-icon-bg: #ffc5a0; /* surface/icon */
+
+  --font-display: var(--font-display), "Iowan Old Style", serif;
+  --font-body: var(--font-body), "Segoe UI", sans-serif;
+  --font-brand: var(--font-brand), sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::selection {
+  background: var(--color-terracotta);
+  color: var(--color-cream);
+}
+
+/* ============================================================
+   Escala tipográfica del sistema (Alegreya Regular):
+   H1 64px  — títulos de sección
+   H2 32px  — subtítulos en bloque ("Qué es", "Cupos Limitados")
+   H3 24px  — nombres de testimonios/guías, preguntas del FAQ,
+              etiquetas de "Información Clave"
+   El color y la alineación se definen en cada uso, no acá.
+   ============================================================ */
+@utility h1-section {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 7vw, 4rem);
+  line-height: 1.15;
+}
+@utility h2-section {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+@utility h3-section {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--color-terracotta);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Permite scroll horizontal (ej. la franja de fotos en mobile) sin mostrar la barra nativa. */
+.sin-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sin-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
