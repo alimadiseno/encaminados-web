@@ -13,12 +13,14 @@ async function leerVariables(): Promise<{ url?: string; key?: string }> {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
     const { env } = await getCloudflareContext({ async: true });
     const cfEnv = env as Record<string, string | undefined>;
+    console.log("[diag] getCloudflareContext keys:", Object.keys(cfEnv));
     if (cfEnv.SUPABASE_URL && cfEnv.SUPABASE_ANON_KEY) {
       return { url: cfEnv.SUPABASE_URL, key: cfEnv.SUPABASE_ANON_KEY };
     }
-  } catch {
-    // No hay contexto de Cloudflare disponible (ej. durante `next build`) — se sigue abajo.
+  } catch (e) {
+    console.log("[diag] getCloudflareContext threw:", e instanceof Error ? e.message : e);
   }
+  console.log("[diag] process.env keys:", Object.keys(process.env));
   return { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_ANON_KEY };
 }
 
