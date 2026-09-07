@@ -11,6 +11,16 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	// SUPABASE_URL y SUPABASE_ANON_KEY (llave "publishable"/anon) están hechas
+	// para ser públicas — su seguridad depende de las policies de RLS en
+	// Supabase, no de mantenerlas ocultas. Se declaran acá (en vez de solo en
+	// el dashboard) porque "wrangler deploy" usa este archivo como fuente de
+	// verdad: cualquier variable puesta solo en el dashboard se pierde en el
+	// siguiente deploy que dispare el pipeline de Git.
+	"vars": {
+		"SUPABASE_URL": "https://rckjlzzxeyjkvdbzdkpx.supabase.co",
+		"SUPABASE_ANON_KEY": "sb_publishable__tWNQ6UCc_77iBa2Mk7QrA_54IiAjzP"
+	},
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name

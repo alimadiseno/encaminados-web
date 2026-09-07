@@ -1,26 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * En Cloudflare Workers, las variables agregadas desde el dashboard llegan
- * por el "binding" `env` (vía `getCloudflareContext()`), no por
- * `process.env` — a diferencia de Node.js / `next dev` / el paso de build,
- * donde sí vienen de `.env.local` a través de `process.env`. Se intenta
- * primero el contexto de Cloudflare y se cae a `process.env` si no
- * corresponde (build estático, tests, etc.).
+ * En Cloudflare Workers, las variables llegan por el "binding" `env` (vía
+ * `getCloudflareContext()`), no por `process.env` — a diferencia de
+ * Node.js / `next dev` / el paso de build, donde sí vienen de `.env.local`
+ * a través de `process.env`. Se intenta primero el contexto de Cloudflare y
+ * se cae a `process.env` si no corresponde (build estático, tests, etc.).
  */
 async function leerVariables(): Promise<{ url?: string; key?: string }> {
   try {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
     const { env } = await getCloudflareContext({ async: true });
     const cfEnv = env as Record<string, string | undefined>;
-    console.log("[diag] getCloudflareContext keys:", Object.keys(cfEnv));
     if (cfEnv.SUPABASE_URL && cfEnv.SUPABASE_ANON_KEY) {
       return { url: cfEnv.SUPABASE_URL, key: cfEnv.SUPABASE_ANON_KEY };
     }
-  } catch (e) {
-    console.log("[diag] getCloudflareContext threw:", e instanceof Error ? e.message : e);
+  } catch {
+    // No hay contexto de Cloudflare disponible (ej. durante `next build`) — se sigue abajo.
   }
-  console.log("[diag] process.env keys:", Object.keys(process.env));
   return { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_ANON_KEY };
 }
 
@@ -35,8 +32,8 @@ export async function getSupabaseClient() {
 
   if (!url || !key) {
     throw new Error(
-      "Faltan las variables de entorno SUPABASE_URL / SUPABASE_ANON_KEY (.env.local en local, " +
-        "Runtime variables and secrets en el Worker de Cloudflare).",
+      "Faltan las variables de entorno SUPABASE_URL / SUPABASE_ANON_KEY " +
+        "(.env.local en local, vars en wrangler.jsonc en Cloudflare).",
     );
   }
 
