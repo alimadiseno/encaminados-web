@@ -113,19 +113,26 @@ export function CampoArchivo({
   return (
     <div className="flex flex-1 flex-col gap-1.5 text-sm text-ink">
       <span className="font-semibold">{label}</span>
-      {urlActual ? (
-        // eslint-disable-next-line @next/next/no-img-element -- previsualización de una URL arbitraria (Storage o /public), no vale la pena el loader de next/image acá.
-        <img src={urlActual} alt="" className="h-24 w-24 rounded-lg object-cover" />
-      ) : (
-        <p className="text-xs text-ink/50">Sin foto todavía.</p>
-      )}
-      <input
-        type="file"
-        name={name}
-        accept="image/*"
-        onChange={(e) => setNombreElegido(e.target.files?.[0]?.name ?? null)}
-        className="text-xs"
-      />
+      <div className="flex items-center gap-3">
+        {urlActual ? (
+          // eslint-disable-next-line @next/next/no-img-element -- previsualización de una URL arbitraria (Storage o /public), no vale la pena el loader de next/image acá.
+          <img src={urlActual} alt="" className="h-16 w-16 flex-none rounded-lg object-cover" />
+        ) : (
+          <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-sage/40 text-center text-[11px] text-ink/50">
+            Sin foto
+          </div>
+        )}
+        <label className="inline-flex min-h-[40px] flex-none cursor-pointer items-center justify-center rounded-full border-2 border-terracotta px-4 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach">
+          Elegir foto
+          <input
+            type="file"
+            name={name}
+            accept="image/*"
+            onChange={(e) => setNombreElegido(e.target.files?.[0]?.name ?? null)}
+            className="sr-only"
+          />
+        </label>
+      </div>
       {nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}
     </div>
   );
