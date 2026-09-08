@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import LoginForm from "@/components/guias/LoginForm";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GuiasPage() {
-  // [diag] cookies()/haySesionValida() deshabilitado a propósito para
-  // aislar si el problema está ahí o en <LoginForm/> (Server Action
-  // importada dentro de un Client Component).
-  return <LoginForm />;
+  // [diag] probando solo cookies(), sin getCloudflareContext ni crypto.
+  const jar = await cookies();
+  const valor = jar.get("guias_sesion")?.value ?? "(sin cookie)";
+  return (
+    <div style={{ padding: 40, fontFamily: "monospace" }}>
+      [diag] cookies() funcionó. valor = {valor}
+      <LoginForm />
+    </div>
+  );
 }
