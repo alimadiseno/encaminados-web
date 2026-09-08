@@ -55,17 +55,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se encontró el retiro destacado." }, { status: 500 });
   }
 
-  const { error: errorInsertar } = await supabase.from("inscritos").insert({
-    retreat_id: retreat.id,
-    nombre_esposa: nombreEsposa,
-    email_esposa: emailEsposa,
-    telefono_esposa: telefonoEsposa || null,
-    nombre_marido: nombreMarido,
-    email_marido: emailMarido,
-    telefono_marido: telefonoMarido || null,
-    fecha_elegida: fechaElegida,
-    estado_pago: "pendiente",
-  });
+  // upsert (no insert): si el script de Apps Script se corre dos veces sobre la
+  // misma respuesta (ej. reintentando la carga inicial), la fila ya existente
+  // — con cualquier estado de pago que Aline ya haya marcado a mano — no se pisa.
+  const { error: errorInsertar } = await supabase.from("inscritos").upsert(
+    {
+      retreat_id: retreat.id,
+      nombre_esposa: nombreEsposa,
+      email_esposa: emailEsposa,
+      telefono_esposa: telefonoEsposa || null,
+      nombre_marido: nombreMarido,
+      email_marido: emailMarido,
+      telefono_marido: telefonoMarido || null,
+      fecha_elegida: fechaElegida,
+      estado_pago: "pendiente",
+    },
+    { onConflict: "retreat_id,email_esposa,email_marido", ignoreDuplicates: true },
+  );
 
   if (errorInsertar) {
     return NextResponse.json({ error: errorInsertar.message }, { status: 500 });
