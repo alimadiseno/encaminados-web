@@ -51,6 +51,7 @@ export interface FilaFoto extends FilaOrdenable {
 }
 
 export interface FilaRetreat {
+  id: string;
   slug: string;
   nombre: string;
   bajada: string;
@@ -117,6 +118,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
   const ordenar = <T extends FilaOrdenable>(rows: T[]) => [...rows].sort((a, b) => a.orden - b.orden);
 
   return {
+    id: retreat.id,
     slug: retreat.slug,
     nombre: retreat.nombre,
     bajada: retreat.bajada,

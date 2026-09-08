@@ -7,7 +7,7 @@ import Logo from "@/components/Logo";
 
 const estadoInicial: LoginState = {};
 
-export default function AdminLoginForm() {
+export default function AdminLoginForm({ redirectTo = "/admin" }: { redirectTo?: string }) {
   const [state, formAction, pending] = useActionState(loginAdmin, estadoInicial);
 
   return (
@@ -23,6 +23,7 @@ export default function AdminLoginForm() {
         </div>
 
         <form action={formAction} className="flex w-full flex-col items-stretch gap-4">
+          <input type="hidden" name="redirectTo" value={redirectTo} />
           <input
             type="password"
             name="password"

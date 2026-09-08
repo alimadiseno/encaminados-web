@@ -65,6 +65,7 @@ export interface Seo {
 }
 
 export interface RetreatEvent {
+  id: string;
   slug: string;
   nombre: string;
   bajada: string;
