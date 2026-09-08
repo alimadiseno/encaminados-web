@@ -3,6 +3,10 @@ import { haySesionValida } from "@/lib/guias-auth";
 import LoginForm from "@/components/guias/LoginForm";
 import DocumentosList from "@/components/guias/DocumentosList";
 
+// Depende de cookies() — se declara dinámica explícitamente en vez de
+// dejar que Next.js lo detecte solo intentando una pasada estática primero.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Guías y monitores · Encaminados",
