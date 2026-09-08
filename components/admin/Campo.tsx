@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const claseInput =
-  "rounded-xl border-2 border-ink/15 bg-cream px-4 py-2.5 text-base text-ink outline-none focus-visible:border-terracotta";
+  "w-full rounded-xl border-2 border-ink/15 bg-cream px-4 py-2.5 text-base text-ink outline-none focus-visible:border-terracotta";
 
 export function CampoTexto({
   label,

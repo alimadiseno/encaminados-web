@@ -167,8 +167,8 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1100px] items-start gap-8 px-6 py-10 sm:px-10">
-        <aside className="sticky top-24 flex w-full flex-none flex-row gap-2 overflow-x-auto sm:w-48 sm:flex-col sm:overflow-visible">
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:gap-8 sm:px-10">
+        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:overflow-visible">
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
           </button>
@@ -180,7 +180,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
           </button>
         </aside>
 
-        <form action={formAction} className="flex min-w-0 flex-1 flex-col gap-10">
+        <form id="formulario-retreat" action={formAction} className="flex min-w-0 flex-1 flex-col gap-10">
           {state.error && (
             <p className="rounded-xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-700">{state.error}</p>
           )}
@@ -468,7 +468,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
 
           <input type="hidden" name="datos" value={JSON.stringify(datos)} readOnly />
 
-          <div className="sticky bottom-6 flex flex-col items-center gap-2 self-center">
+          <div className="flex flex-col items-center gap-2 border-t border-ink/10 pt-8">
             <button
               type="submit"
               disabled={pending}
