@@ -174,11 +174,11 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
           </button>
-          <button type="button" onClick={() => setVista("documentos")} className={claseNavPrincipal(vista === "documentos")}>
-            Documentos
-          </button>
           <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
             Contenido
+          </button>
+          <button type="button" onClick={() => setVista("documentos")} className={claseNavPrincipal(vista === "documentos")}>
+            Documentos sitio privado
           </button>
           <button type="button" onClick={() => setVista("seo")} className={claseNavPrincipal(vista === "seo")}>
             SEO
