@@ -6,7 +6,7 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
   return (
     <footer className="bg-sage px-6 py-12 sm:px-10 lg:px-24">
       <Reveal className="mx-auto flex max-w-[1440px] flex-col gap-8">
-        <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
           <div className="flex flex-col gap-3">
             <p className="font-brand text-[22px] leading-[1.05] font-medium text-terracotta">
               <span className="block">EN CAMINA</span>
@@ -15,35 +15,40 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
             <p className="text-sm leading-[1.6] text-ink">{retreat.bajada}</p>
           </div>
 
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-24">
-            <a
-              href={`https://wa.me/${retreat.contacto.whatsapp.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener"
-              className="flex items-center gap-2 text-base font-semibold text-ink no-underline"
-            >
-              <img src="/icons/whatsapp.svg" alt="" className="size-[18px] flex-none" />
-              {retreat.contacto.whatsapp}
-            </a>
-            <a href={`mailto:${retreat.contacto.email}`} className="flex items-center gap-2 text-base font-semibold text-ink no-underline">
-              <img src="/icons/mail.svg" alt="" className="size-[18px] flex-none" />
-              {retreat.contacto.email}
-            </a>
+          <div className="flex flex-col gap-8 sm:flex-row sm:gap-16">
+            <div className="flex flex-col items-start gap-4">
+              <a
+                href={`https://wa.me/${retreat.contacto.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-2 text-base font-semibold text-ink no-underline"
+              >
+                <img src="/icons/whatsapp.svg" alt="" className="size-[18px] flex-none" />
+                {retreat.contacto.whatsapp}
+              </a>
+              <a href={`mailto:${retreat.contacto.email}`} className="flex items-center gap-2 text-base font-semibold text-ink no-underline">
+                <img src="/icons/mail.svg" alt="" className="size-[18px] flex-none" />
+                {retreat.contacto.email}
+              </a>
+            </div>
+
+            <div className="flex flex-col items-start gap-4">
+              <Link
+                href="/guias"
+                className="flex items-center gap-2 text-base font-semibold text-terracotta no-underline transition-colors hover:text-ink"
+              >
+                <svg viewBox="0 0 24 24" className="size-[18px] flex-none" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <rect x="4" y="11" width="16" height="9" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+                Acceso guías y monitores
+              </Link>
+            </div>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-3 border-t border-ink/10 pt-6">
           <p className="text-center text-sm text-ink">Una iniciativa de #familiaRC · Regnum Christi Chile</p>
-          <Link
-            href="/guias"
-            className="flex items-center gap-1.5 text-xs text-ink/60 no-underline transition-colors hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" className="size-3.5 flex-none" fill="none" stroke="currentColor" strokeWidth={2}>
-              <rect x="4" y="11" width="16" height="9" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
-            Acceso guías y monitores
-          </Link>
         </div>
       </Reveal>
     </footer>
