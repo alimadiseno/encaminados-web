@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { logoutGuias } from "@/app/guias/actions";
 
 interface Documento {
@@ -50,11 +51,16 @@ export default function DocumentosList() {
             <span className="block">EN CAMINA</span>
             <span className="block">DOS</span>
           </p>
-          <form action={logoutGuias}>
-            <button type="submit" className="text-sm text-ink underline underline-offset-2">
-              Cerrar sesión
-            </button>
-          </form>
+          <div className="flex items-center gap-6">
+            <Link href="/" className="text-sm text-ink underline underline-offset-2">
+              ← Volver a la página de Encaminados
+            </Link>
+            <form action={logoutGuias}>
+              <button type="submit" className="text-sm text-ink underline underline-offset-2">
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3">

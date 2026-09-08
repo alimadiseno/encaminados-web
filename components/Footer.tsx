@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { RetreatEvent } from "@/types/retreat";
 import Reveal from "./Reveal";
 
@@ -31,7 +32,19 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
           </div>
         </div>
 
-        <p className="text-center text-sm text-ink">Una iniciativa de #familiaRC · Regnum Christi Chile</p>
+        <div className="flex flex-col items-center gap-3 border-t border-ink/10 pt-6">
+          <p className="text-center text-sm text-ink">Una iniciativa de #familiaRC · Regnum Christi Chile</p>
+          <Link
+            href="/guias"
+            className="flex items-center gap-1.5 text-xs text-ink/60 no-underline transition-colors hover:text-ink"
+          >
+            <svg viewBox="0 0 24 24" className="size-3.5 flex-none" fill="none" stroke="currentColor" strokeWidth={2}>
+              <rect x="4" y="11" width="16" height="9" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+            Acceso guías y monitores
+          </Link>
+        </div>
       </Reveal>
     </footer>
   );
