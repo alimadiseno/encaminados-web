@@ -14,42 +14,42 @@ import type { RetreatEvent } from "@/types/retreat";
 // a mano porque el proyecto no genera tipos desde el esquema de Supabase —
 // si en algún momento se agrega `supabase gen types`, esto se puede
 // reemplazar por los tipos generados.
-interface FilaOrdenable {
+export interface FilaOrdenable {
   orden: number;
 }
-interface FilaFecha extends FilaOrdenable {
+export interface FilaFecha extends FilaOrdenable {
   label: string;
   fecha_inicio: string;
   fecha_termino: string;
 }
-interface FilaIdea extends FilaOrdenable {
+export interface FilaIdea extends FilaOrdenable {
   titulo: string;
   descripcion: string;
 }
-interface FilaVideo extends FilaOrdenable {
+export interface FilaVideo extends FilaOrdenable {
   id: string;
   nombre: string;
   cita: string;
   youtube_id: string | null;
 }
-interface FilaGuia extends FilaOrdenable {
+export interface FilaGuia extends FilaOrdenable {
   id: string;
   nombre: string;
   rol: string;
   foto_url: string | null;
   foto_forma: string;
 }
-interface FilaFaq extends FilaOrdenable {
+export interface FilaFaq extends FilaOrdenable {
   pregunta: string;
   respuesta: string;
   enlace_texto: string | null;
   enlace_href: string | null;
 }
-interface FilaFoto extends FilaOrdenable {
+export interface FilaFoto extends FilaOrdenable {
   foto_url: string;
 }
 
-interface FilaRetreat {
+export interface FilaRetreat {
   slug: string;
   nombre: string;
   bajada: string;
@@ -181,7 +181,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
   };
 }
 
-const RETIRO_DESTACADO = "2026-segundo-semestre";
+export const RETIRO_DESTACADO = "2026-segundo-semestre";
 
 export async function getFeaturedRetreat(): Promise<RetreatEvent> {
   const retreat = await cargarRetreat(RETIRO_DESTACADO);
