@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { loginAdmin, type LoginState } from "@/app/admin/actions";
+import Logo from "@/components/Logo";
 
 const estadoInicial: LoginState = {};
 
@@ -12,10 +13,7 @@ export default function AdminLoginForm() {
   return (
     <section className="flex min-h-[100svh] items-center justify-center bg-lavender px-6 py-16">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-8 rounded-[24px] bg-cream px-8 py-10 text-center shadow-[0_1px_2px_rgba(21,16,14,.06)] sm:px-10">
-        <p className="font-brand text-[22px] leading-[1.05] font-medium text-terracotta">
-          <span className="block">EN CAMINA</span>
-          <span className="block">DOS</span>
-        </p>
+        <Logo className="h-[39px] w-auto text-terracotta" />
 
         <div className="flex flex-col items-center gap-3">
           <h1 className="h2-section text-ink">Panel de administración</h1>

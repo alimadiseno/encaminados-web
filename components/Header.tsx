@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RetreatEvent } from "@/types/retreat";
+import Logo from "./Logo";
 
 const NAV_LINKS = [
   { href: "#jornada", label: "Qué es" },
@@ -39,9 +40,8 @@ export default function Header({ retreat }: { retreat: RetreatEvent }) {
       }`}
     >
       <div className="mx-auto flex max-w-[1440px] items-center gap-6 px-6 py-5 sm:px-10 lg:px-24">
-        <a href="#top" className={`mr-auto font-brand text-[22px] leading-[1.05] font-medium text-terracotta no-underline`}>
-          <span className="block">EN CAMINA</span>
-          <span className="block">DOS</span>
+        <a href="#top" className="mr-auto text-terracotta no-underline">
+          <Logo />
         </a>
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Principal">

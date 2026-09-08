@@ -26,6 +26,15 @@ function idCliente(): string {
   return crypto.randomUUID();
 }
 
+/**
+ * Los clientId de las filas iniciales tienen que ser deterministas (no
+ * crypto.randomUUID()): este objeto se arma dentro de un useState perezoso,
+ * que React ejecuta tanto en el render de servidor como al hidratar en el
+ * cliente — con IDs aleatorios, cada lado generaría valores distintos y
+ * produciría un hydration mismatch en los <input type="file"> (su `name`
+ * depende del clientId). Para filas nuevas agregadas con "+ Agregar" sí se
+ * usa idCliente(), porque esas solo se crean en el navegador.
+ */
 function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
   return {
     nombre: retreat.nombre,
@@ -42,16 +51,16 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     cuposDescripcion: retreat.cuposDescripcion,
     inscripcionUrl: retreat.inscripcionUrl,
     contacto: { ...retreat.contacto },
-    fechas: retreat.fechas.map((f) => ({ clientId: idCliente(), label: f.label, start: f.start, end: f.end })),
-    ideas: retreat.ideas.map((i) => ({ clientId: idCliente(), titulo: i.titulo, descripcion: i.descripcion })),
+    fechas: retreat.fechas.map((f, i) => ({ clientId: `fecha-${i}`, label: f.label, start: f.start, end: f.end })),
+    ideas: retreat.ideas.map((idea, i) => ({ clientId: `idea-${i}`, titulo: idea.titulo, descripcion: idea.descripcion })),
     videos: retreat.videos.map((v) => ({
-      clientId: idCliente(),
+      clientId: v.id,
       nombre: v.nombre,
       cita: v.cita,
       youtubeId: v.youtubeId ?? "",
     })),
     guias: retreat.guias.map((g) => ({
-      clientId: idCliente(),
+      clientId: g.id,
       nombre: g.nombre,
       rol: g.rol,
       fotoUrl: g.fotoUrl,
@@ -63,8 +72,8 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
       pendiente: retreat.historia.pendiente,
       imagenUrl: retreat.historia.imagenUrl,
     },
-    faq: retreat.faq.map((f) => ({
-      clientId: idCliente(),
+    faq: retreat.faq.map((f, i) => ({
+      clientId: `faq-${i}`,
       pregunta: f.pregunta,
       respuesta: f.respuesta,
       enlaceTexto: f.enlace?.texto ?? "",
@@ -72,7 +81,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     })),
     heroImagenUrl: retreat.heroImagenUrl,
     sectionDividerImagenUrl: retreat.sectionDividerImagenUrl,
-    fotosDecorativas: retreat.fotosDecorativas.map((url) => ({ clientId: idCliente(), url })),
+    fotosDecorativas: retreat.fotosDecorativas.map((url, i) => ({ clientId: `foto-${i}`, url })),
     seo: {
       titulo: retreat.seo.titulo ?? "",
       descripcion: retreat.seo.descripcion ?? "",

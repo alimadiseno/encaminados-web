@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { logoutGuias } from "@/app/guias/actions";
+import Logo from "@/components/Logo";
 
 interface Documento {
   id: string;
@@ -47,10 +48,7 @@ export default function DocumentosList() {
     <section className="min-h-[100svh] bg-cream px-6 py-16 sm:px-10 lg:px-24">
       <div className="mx-auto flex max-w-[1120px] flex-col gap-12">
         <div className="flex items-start justify-between gap-6">
-          <p className="font-brand text-[22px] leading-[1.05] font-medium text-terracotta">
-            <span className="block">EN CAMINA</span>
-            <span className="block">DOS</span>
-          </p>
+          <Logo className="h-[39px] w-auto text-terracotta" />
           <div className="flex items-center gap-6">
             <Link href="/" className="text-sm text-ink underline underline-offset-2">
               ← Volver a la página de Encaminados

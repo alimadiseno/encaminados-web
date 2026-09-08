@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { RetreatEvent } from "@/types/retreat";
+import Logo from "./Logo";
 import Reveal from "./Reveal";
 
 export default function Footer({ retreat }: { retreat: RetreatEvent }) {
@@ -8,10 +9,7 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
       <Reveal className="mx-auto flex max-w-[1440px] flex-col gap-8">
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
           <div className="flex flex-col gap-3">
-            <p className="font-brand text-[22px] leading-[1.05] font-medium text-terracotta">
-              <span className="block">EN CAMINA</span>
-              <span className="block">DOS</span>
-            </p>
+            <Logo className="h-[39px] w-auto text-terracotta" />
             <p className="text-sm leading-[1.6] text-ink">{retreat.bajada}</p>
           </div>
 
