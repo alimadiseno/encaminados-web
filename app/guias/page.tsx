@@ -11,15 +11,21 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+async function hash(texto: string): Promise<string> {
+  const datos = new TextEncoder().encode(texto);
+  const digest = await crypto.subtle.digest("SHA-256", datos);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 export default async function GuiasPage() {
-  // [diag] cookies() + getCloudflareContext() juntos, sin crypto todavía.
-  let cfKeys: string[] = [];
+  // [diag] agregando el hash SHA-256 a la mezcla.
+  let resultado: string;
   try {
-    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const { env } = await getCloudflareContext({ async: true });
-    cfKeys = Object.keys(env as Record<string, unknown>);
+    resultado = await hash("prueba");
   } catch (e) {
-    cfKeys = [`ERROR: ${e instanceof Error ? e.message : String(e)}`];
+    resultado = `ERROR: ${e instanceof Error ? e.message : String(e)}`;
   }
 
   const jar = await cookies();
@@ -27,11 +33,9 @@ export default async function GuiasPage() {
 
   return (
     <div style={{ padding: 40, fontFamily: "monospace" }}>
-      [diag] cookies() + getCloudflareContext() juntos funcionaron.
+      [diag] hash = {resultado}
       <br />
       cookie = {valor}
-      <br />
-      cfKeys = {cfKeys.join(", ")}
       <LoginForm />
     </div>
   );
