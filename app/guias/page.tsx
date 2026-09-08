@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { haySesionValida } from "@/lib/guias-auth";
 import LoginForm from "@/components/guias/LoginForm";
-import DocumentosList from "@/components/guias/DocumentosList";
 
-// Depende de cookies() — se declara dinámica explícitamente en vez de
-// dejar que Next.js lo detecte solo intentando una pasada estática primero.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,6 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GuiasPage() {
-  const autenticado = await haySesionValida();
-  return autenticado ? <DocumentosList /> : <LoginForm />;
+  // [diag] cookies()/haySesionValida() deshabilitado a propósito para
+  // aislar si el problema está ahí o en <LoginForm/> (Server Action
+  // importada dentro de un Client Component).
+  return <LoginForm />;
 }
