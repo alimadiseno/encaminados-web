@@ -93,23 +93,28 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
 type Vista = "contenido" | "seo";
 type SeccionContenido =
   | "datos-generales"
+  | "hero"
   | "fechas"
   | "ideas"
   | "testimonios"
   | "guias"
+  | "franja-fotos"
   | "historia"
-  | "faq"
-  | "imagenes";
+  | "faq";
 
+// En el orden en que aparecen en la web, salvo "Datos generales" — esa no
+// corresponde a un bloque de la página, son datos generales a rellenar, y
+// por eso queda primera siempre.
 const SECCIONES_CONTENIDO: { clave: SeccionContenido; etiqueta: string }[] = [
   { clave: "datos-generales", etiqueta: "Datos generales" },
+  { clave: "hero", etiqueta: "Hero" },
   { clave: "fechas", etiqueta: "Fechas" },
   { clave: "ideas", etiqueta: "Qué es Encaminados" },
   { clave: "testimonios", etiqueta: "Testimonios" },
   { clave: "guias", etiqueta: "Quiénes los acompañan" },
+  { clave: "franja-fotos", etiqueta: "Franja de fotos" },
   { clave: "historia", etiqueta: "Nuestra historia" },
   { clave: "faq", etiqueta: "Preguntas frecuentes" },
-  { clave: "imagenes", etiqueta: "Imágenes" },
 ];
 
 function claseNavPrincipal(activo: boolean): string {
@@ -200,7 +205,6 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 <CampoTexto label="Nombre del retiro" value={datos.nombre} onChange={(v) => set("nombre", v)} />
                 <CampoTexto label="Lugar" value={datos.lugar} onChange={(v) => set("lugar", v)} />
               </div>
-              <CampoTextarea label="Bajada (subtítulo del hero)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <CampoTexto label="Cómo llegar" value={datos.comoLlegar} onChange={(v) => set("comoLlegar", v)} />
                 <CampoTexto label="URL del mapa" value={datos.mapaUrl} onChange={(v) => set("mapaUrl", v)} />
@@ -237,6 +241,14 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
             </section>
           </div>
 
+          <div className={claseSeccion("hero")}>
+            <section className="flex flex-col gap-4">
+              <h2 className="h2-section text-ink">Hero</h2>
+              <CampoTextarea label="Texto del hero (subtítulo)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
+              <CampoArchivo label="Foto del hero" urlActual={datos.heroImagenUrl} name={KEY_ARCHIVO_HERO} />
+            </section>
+          </div>
+
           <div className={claseSeccion("fechas")}>
             <ListaEditable<FechaEditable>
               titulo="Fechas"
@@ -254,18 +266,25 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
           </div>
 
           <div className={claseSeccion("ideas")}>
-            <ListaEditable<IdeaEditable>
-              titulo="Qué es Encaminados"
-              items={datos.ideas}
-              onChange={(ideas) => set("ideas", ideas)}
-              nuevoItem={() => ({ clientId: idCliente(), titulo: "", descripcion: "" })}
-              renderItem={(item, actualizar) => (
-                <>
-                  <CampoTexto label="Título" value={item.titulo} onChange={(v) => actualizar({ titulo: v })} />
-                  <CampoTextarea label="Descripción" value={item.descripcion} onChange={(v) => actualizar({ descripcion: v })} filas={2} />
-                </>
-              )}
-            />
+            <div className="flex flex-col gap-8">
+              <CampoArchivo
+                label="Foto entre el hero y esta sección"
+                urlActual={datos.sectionDividerImagenUrl}
+                name={KEY_ARCHIVO_SECTION_DIVIDER}
+              />
+              <ListaEditable<IdeaEditable>
+                titulo="Qué es Encaminados"
+                items={datos.ideas}
+                onChange={(ideas) => set("ideas", ideas)}
+                nuevoItem={() => ({ clientId: idCliente(), titulo: "", descripcion: "" })}
+                renderItem={(item, actualizar) => (
+                  <>
+                    <CampoTexto label="Título" value={item.titulo} onChange={(v) => actualizar({ titulo: v })} />
+                    <CampoTextarea label="Descripción" value={item.descripcion} onChange={(v) => actualizar({ descripcion: v })} filas={2} />
+                  </>
+                )}
+              />
+            </div>
           </div>
 
           <div className={claseSeccion("testimonios")}>
@@ -327,6 +346,17 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
             </div>
           </div>
 
+          <div className={claseSeccion("franja-fotos")}>
+            <ListaEditable<FotoEditable>
+              titulo="Franja de fotos"
+              items={datos.fotosDecorativas}
+              onChange={(fotosDecorativas) => set("fotosDecorativas", fotosDecorativas)}
+              nuevoItem={() => ({ clientId: idCliente(), url: "" })}
+              renderItem={(item) => <CampoArchivo label="Foto" urlActual={item.url} name={keyArchivoDecorativa(item.clientId)} />}
+              etiquetaAgregar="+ Agregar foto"
+            />
+          </div>
+
           <div className={claseSeccion("historia")}>
             <section className="flex flex-col gap-4">
               <h2 className="h2-section text-ink">Nuestra historia</h2>
@@ -370,31 +400,6 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 </>
               )}
             />
-          </div>
-
-          <div className={claseSeccion("imagenes")}>
-            <div className="flex flex-col gap-8">
-              <section className="flex flex-col gap-4">
-                <h2 className="h2-section text-ink">Imágenes generales</h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <CampoArchivo label="Foto del hero" urlActual={datos.heroImagenUrl} name={KEY_ARCHIVO_HERO} />
-                  <CampoArchivo
-                    label="Foto separadora entre secciones"
-                    urlActual={datos.sectionDividerImagenUrl}
-                    name={KEY_ARCHIVO_SECTION_DIVIDER}
-                  />
-                </div>
-              </section>
-
-              <ListaEditable<FotoEditable>
-                titulo="Franja de fotos decorativas"
-                items={datos.fotosDecorativas}
-                onChange={(fotosDecorativas) => set("fotosDecorativas", fotosDecorativas)}
-                nuevoItem={() => ({ clientId: idCliente(), url: "" })}
-                renderItem={(item) => <CampoArchivo label="Foto" urlActual={item.url} name={keyArchivoDecorativa(item.clientId)} />}
-                etiquetaAgregar="+ Agregar foto"
-              />
-            </div>
           </div>
 
           <div className={claseSeo}>
