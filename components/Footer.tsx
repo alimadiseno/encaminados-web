@@ -5,7 +5,7 @@ import Reveal from "./Reveal";
 
 export default function Footer({ retreat }: { retreat: RetreatEvent }) {
   return (
-    <footer className="bg-sage px-6 py-12 sm:px-10 lg:px-24">
+    <footer className="bg-sage px-6 pt-12 pb-[120px] sm:px-10 lg:px-24 lg:pb-12">
       <Reveal className="mx-auto flex max-w-[1440px] flex-col gap-8">
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
           <div className="flex flex-col gap-3">
@@ -48,7 +48,7 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
         <div className="flex flex-col items-center gap-3 border-t border-ink/10 pt-6">
           <p className="text-center text-sm text-ink">Una iniciativa de #familiaRC · Regnum Christi Chile</p>
           <Link href="/admin" className="text-xs text-ink/40 no-underline transition-colors hover:text-ink/70">
-            Admin
+            Acceso Admin
           </Link>
         </div>
       </Reveal>
