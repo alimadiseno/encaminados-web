@@ -90,30 +90,30 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
   };
 }
 
-type Vista = "contenido" | "seo";
+type Vista = "contenido" | "general" | "seo";
 type SeccionContenido =
-  | "datos-generales"
   | "hero"
-  | "fechas"
   | "ideas"
   | "testimonios"
   | "guias"
   | "franja-fotos"
   | "historia"
+  | "informacion-clave"
   | "faq";
 
-// En el orden en que aparecen en la web, salvo "Datos generales" — esa no
-// corresponde a un bloque de la página, son datos generales a rellenar, y
-// por eso queda primera siempre.
+// En el mismo orden en que los bloques aparecen en la página pública — cada
+// pestaña trae solo lo que se ve en ese bloque. Lo transversal (nombre del
+// retiro, WhatsApp, correo, link de inscripción — cosas que se repiten en
+// varios lugares del sitio, no de un bloque en particular) vive aparte, en
+// la vista "General" del menú lateral.
 const SECCIONES_CONTENIDO: { clave: SeccionContenido; etiqueta: string }[] = [
-  { clave: "datos-generales", etiqueta: "Datos generales" },
   { clave: "hero", etiqueta: "Hero" },
-  { clave: "fechas", etiqueta: "Fechas" },
   { clave: "ideas", etiqueta: "Qué es Encaminados" },
   { clave: "testimonios", etiqueta: "Testimonios" },
   { clave: "guias", etiqueta: "Quiénes los acompañan" },
   { clave: "franja-fotos", etiqueta: "Franja de fotos" },
   { clave: "historia", etiqueta: "Nuestra historia" },
+  { clave: "informacion-clave", etiqueta: "Información Clave" },
   { clave: "faq", etiqueta: "Preguntas frecuentes" },
 ];
 
@@ -135,7 +135,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
   const [datos, setDatos] = useState<DatosFormularioAdmin>(() => aEditable(retreat));
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
   const [vista, setVista] = useState<Vista>("contenido");
-  const [seccion, setSeccion] = useState<SeccionContenido>("datos-generales");
+  const [seccion, setSeccion] = useState<SeccionContenido>("hero");
 
   function set<K extends keyof DatosFormularioAdmin>(clave: K, valor: DatosFormularioAdmin[K]) {
     setDatos((prev) => ({ ...prev, [clave]: valor }));
@@ -147,6 +147,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
   function claseSeccion(clave: SeccionContenido): string {
     return vista === "contenido" && seccion === clave ? "contents" : "hidden";
   }
+  const claseGeneral = vista === "general" ? "contents" : "hidden";
   const claseSeo = vista === "seo" ? "contents" : "hidden";
 
   return (
@@ -171,6 +172,9 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
         <aside className="sticky top-24 flex w-full flex-none flex-row gap-2 overflow-x-auto sm:w-48 sm:flex-col sm:overflow-visible">
           <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
             Contenido
+          </button>
+          <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
+            General
           </button>
           <button type="button" onClick={() => setVista("seo")} className={claseNavPrincipal(vista === "seo")}>
             SEO
@@ -198,71 +202,12 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
             </nav>
           )}
 
-          <div className={claseSeccion("datos-generales")}>
-            <section className="flex flex-col gap-4">
-              <h2 className="h2-section text-ink">Datos generales</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <CampoTexto label="Nombre del retiro" value={datos.nombre} onChange={(v) => set("nombre", v)} />
-                <CampoTexto label="Lugar" value={datos.lugar} onChange={(v) => set("lugar", v)} />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <CampoTexto label="Cómo llegar" value={datos.comoLlegar} onChange={(v) => set("comoLlegar", v)} />
-                <CampoTexto label="URL del mapa" value={datos.mapaUrl} onChange={(v) => set("mapaUrl", v)} />
-                <CampoTexto label="Hora de llegada" value={datos.horaInicio} onChange={(v) => set("horaInicio", v)} />
-                <CampoTexto label="Hora de término" value={datos.horaTermino} onChange={(v) => set("horaTermino", v)} />
-                <CampoTexto label="Costo" value={datos.costo} onChange={(v) => set("costo", v)} />
-                <CampoTexto label="Incluye" value={datos.incluye} onChange={(v) => set("incluye", v)} />
-                <CampoTexto label="Cupos" value={datos.cupos} onChange={(v) => set("cupos", v)} />
-                <CampoTexto label="Descripción de cupos" value={datos.cuposDescripcion} onChange={(v) => set("cuposDescripcion", v)} />
-                <CampoTexto label="URL de inscripción" value={datos.inscripcionUrl} onChange={(v) => set("inscripcionUrl", v)} />
-              </div>
-              <CampoCheckbox
-                label="Ofrece pago en cuotas"
-                checked={datos.cuotasDisponibles}
-                onChange={(v) => set("cuotasDisponibles", v)}
-              />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <CampoTexto
-                  label="WhatsApp"
-                  value={datos.contacto.whatsapp}
-                  onChange={(v) => set("contacto", { ...datos.contacto, whatsapp: v })}
-                />
-                <CampoTexto
-                  label="Mensaje pre-cargado de WhatsApp"
-                  value={datos.contacto.whatsappMensaje}
-                  onChange={(v) => set("contacto", { ...datos.contacto, whatsappMensaje: v })}
-                />
-                <CampoTexto
-                  label="Email de contacto"
-                  value={datos.contacto.email}
-                  onChange={(v) => set("contacto", { ...datos.contacto, email: v })}
-                />
-              </div>
-            </section>
-          </div>
-
           <div className={claseSeccion("hero")}>
             <section className="flex flex-col gap-4">
               <h2 className="h2-section text-ink">Hero</h2>
               <CampoTextarea label="Texto del hero (subtítulo)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
               <CampoArchivo label="Foto del hero" urlActual={datos.heroImagenUrl} name={KEY_ARCHIVO_HERO} />
             </section>
-          </div>
-
-          <div className={claseSeccion("fechas")}>
-            <ListaEditable<FechaEditable>
-              titulo="Fechas"
-              items={datos.fechas}
-              onChange={(fechas) => set("fechas", fechas)}
-              nuevoItem={() => ({ clientId: idCliente(), label: "", start: "", end: "" })}
-              renderItem={(item, actualizar) => (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <CampoTexto label="Texto a mostrar" value={item.label} onChange={(v) => actualizar({ label: v })} />
-                  <CampoTexto label="Inicio" tipo="date" value={item.start} onChange={(v) => actualizar({ start: v })} />
-                  <CampoTexto label="Término" tipo="date" value={item.end} onChange={(v) => actualizar({ end: v })} />
-                </div>
-              )}
-            />
           </div>
 
           <div className={claseSeccion("ideas")}>
@@ -375,6 +320,50 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
             </section>
           </div>
 
+          <div className={claseSeccion("informacion-clave")}>
+            <div className="flex flex-col gap-8">
+              <ListaEditable<FechaEditable>
+                titulo="Fechas"
+                items={datos.fechas}
+                onChange={(fechas) => set("fechas", fechas)}
+                nuevoItem={() => ({ clientId: idCliente(), label: "", start: "", end: "" })}
+                renderItem={(item, actualizar) => (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <CampoTexto label="Texto a mostrar" value={item.label} onChange={(v) => actualizar({ label: v })} />
+                    <CampoTexto label="Inicio" tipo="date" value={item.start} onChange={(v) => actualizar({ start: v })} />
+                    <CampoTexto label="Término" tipo="date" value={item.end} onChange={(v) => actualizar({ end: v })} />
+                  </div>
+                )}
+              />
+
+              <section className="flex flex-col gap-4">
+                <h3 className="h3-section text-ink">Lugar y logística</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <CampoTexto label="Lugar" value={datos.lugar} onChange={(v) => set("lugar", v)} />
+                  <CampoTexto label="Hora de llegada" value={datos.horaInicio} onChange={(v) => set("horaInicio", v)} />
+                  <CampoTexto label="Hora de término" value={datos.horaTermino} onChange={(v) => set("horaTermino", v)} />
+                  <CampoTexto label="Costo" value={datos.costo} onChange={(v) => set("costo", v)} />
+                  <CampoTexto label="Incluye" value={datos.incluye} onChange={(v) => set("incluye", v)} />
+                  <CampoTexto label="Cupos" value={datos.cupos} onChange={(v) => set("cupos", v)} />
+                  <CampoTexto label="Descripción de cupos" value={datos.cuposDescripcion} onChange={(v) => set("cuposDescripcion", v)} />
+                </div>
+              </section>
+
+              <section className="flex flex-col gap-4">
+                <h3 className="h3-section text-ink">Otros datos (sin uso en el sitio por ahora)</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <CampoTexto label="Cómo llegar" value={datos.comoLlegar} onChange={(v) => set("comoLlegar", v)} />
+                  <CampoTexto label="URL del mapa" value={datos.mapaUrl} onChange={(v) => set("mapaUrl", v)} />
+                </div>
+                <CampoCheckbox
+                  label="Ofrece pago en cuotas"
+                  checked={datos.cuotasDisponibles}
+                  onChange={(v) => set("cuotasDisponibles", v)}
+                />
+              </section>
+            </div>
+          </div>
+
           <div className={claseSeccion("faq")}>
             <ListaEditable<FaqEditable>
               titulo="Preguntas frecuentes"
@@ -400,6 +389,34 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 </>
               )}
             />
+          </div>
+
+          <div className={claseGeneral}>
+            <section className="flex flex-col gap-4">
+              <h2 className="h2-section text-ink">Datos generales</h2>
+              <p className="text-sm text-ink/60">
+                Datos que se repiten en varios lugares del sitio (encabezado, hero, footer), no de un solo bloque.
+              </p>
+              <CampoTexto label="Nombre del retiro" value={datos.nombre} onChange={(v) => set("nombre", v)} />
+              <CampoTexto label="URL de inscripción" value={datos.inscripcionUrl} onChange={(v) => set("inscripcionUrl", v)} />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <CampoTexto
+                  label="WhatsApp"
+                  value={datos.contacto.whatsapp}
+                  onChange={(v) => set("contacto", { ...datos.contacto, whatsapp: v })}
+                />
+                <CampoTexto
+                  label="Mensaje pre-cargado de WhatsApp"
+                  value={datos.contacto.whatsappMensaje}
+                  onChange={(v) => set("contacto", { ...datos.contacto, whatsappMensaje: v })}
+                />
+                <CampoTexto
+                  label="Email de contacto"
+                  value={datos.contacto.email}
+                  onChange={(v) => set("contacto", { ...datos.contacto, email: v })}
+                />
+              </div>
+            </section>
           </div>
 
           <div className={claseSeo}>
