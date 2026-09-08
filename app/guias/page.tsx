@@ -9,6 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default async function GuiasPage() {
-  const autenticado = await haySesionValida();
+  let autenticado = false;
+  try {
+    autenticado = await haySesionValida();
+  } catch (e) {
+    console.log("[diag guias] haySesionValida threw:", e instanceof Error ? e.stack ?? e.message : e);
+  }
   return autenticado ? <DocumentosList /> : <LoginForm />;
 }
