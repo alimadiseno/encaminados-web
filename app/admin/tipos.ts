@@ -76,6 +76,7 @@ export interface DatosFormularioAdmin {
   sectionDividerImagenUrl: string;
   fotosDecorativas: FotoEditable[];
   seo: { titulo: string; descripcion: string; imagenUrl: string };
+  documentosDriveUrl: string;
 }
 
 export const KEY_ARCHIVO_HERO = "file:hero";

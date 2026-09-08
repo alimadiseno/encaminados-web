@@ -160,6 +160,7 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
         seo_titulo: datos.seo.titulo || null,
         seo_descripcion: datos.seo.descripcion || null,
         seo_imagen_url: seoImagenUrl || null,
+        documentos_drive_url: datos.documentosDriveUrl || null,
       })
       .eq("slug", RETIRO_DESTACADO)
       .select("id")

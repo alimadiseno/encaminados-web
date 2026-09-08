@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { haySesionValida } from "@/lib/guias-auth";
+import { getFeaturedRetreat } from "@/data/retreats";
 import LoginForm from "@/components/guias/LoginForm";
 import DocumentosList from "@/components/guias/DocumentosList";
 
@@ -14,5 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function GuiasPage() {
   const autenticado = await haySesionValida();
-  return autenticado ? <DocumentosList /> : <LoginForm />;
+  if (!autenticado) return <LoginForm />;
+
+  const retreat = await getFeaturedRetreat();
+  return <DocumentosList driveUrl={retreat.documentosDriveUrl} />;
 }

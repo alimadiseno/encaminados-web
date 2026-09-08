@@ -95,4 +95,6 @@ export interface RetreatEvent {
   /** Franja decorativa entre "guías" e "historia". */
   fotosDecorativas: string[];
   seo: Seo;
+  /** Carpeta de Google Drive con los documentos para guías, incrustada en /guias. Sin definir = sección vacía. */
+  documentosDriveUrl?: string;
 }

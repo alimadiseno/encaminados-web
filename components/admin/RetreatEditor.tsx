@@ -86,10 +86,11 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
       descripcion: retreat.seo.descripcion ?? "",
       imagenUrl: retreat.seo.imagenUrl ?? "",
     },
+    documentosDriveUrl: retreat.documentosDriveUrl ?? "",
   };
 }
 
-type Vista = "contenido" | "general" | "seo";
+type Vista = "contenido" | "general" | "documentos" | "seo";
 type SeccionContenido =
   | "hero"
   | "ideas"
@@ -147,6 +148,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
     return vista === "contenido" && seccion === clave ? "contents" : "hidden";
   }
   const claseGeneral = vista === "general" ? "contents" : "hidden";
+  const claseDocumentos = vista === "documentos" ? "contents" : "hidden";
   const claseSeo = vista === "seo" ? "contents" : "hidden";
 
   return (
@@ -171,6 +173,9 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
         <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:overflow-visible">
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
+          </button>
+          <button type="button" onClick={() => setVista("documentos")} className={claseNavPrincipal(vista === "documentos")}>
+            Documentos
           </button>
           <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
             Contenido
@@ -413,6 +418,27 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 </>
               )}
             />
+          </div>
+
+          <div className={claseDocumentos}>
+            <section className="flex flex-col gap-4">
+              <h2 className="h2-section text-ink">Documentos para guías</h2>
+              <p className="text-sm text-ink/60">
+                Los documentos viven en una carpeta de Google Drive del cliente, no en este sitio. Pega acá el link
+                para compartir de esa carpeta y se muestra incrustada en /guias — cualquier archivo que se suba o
+                elimine ahí se refleja solo, sin volver a tocar este panel.
+              </p>
+              <CampoTexto
+                label="Link de la carpeta de Google Drive"
+                value={datos.documentosDriveUrl}
+                onChange={(v) => set("documentosDriveUrl", v)}
+              />
+              <p className="text-xs text-ink/50">
+                Importante: la carpeta tiene que estar compartida como &quot;Cualquiera con el enlace puede ver&quot;
+                en Drive. Si queda restringida, los guías van a ver un aviso de acceso denegado ahí adentro aunque
+                ya hayan entrado con la clave del sitio.
+              </p>
+            </section>
           </div>
 
           <div className={claseGeneral}>

@@ -74,6 +74,7 @@ export interface FilaRetreat {
   seo_titulo: string | null;
   seo_descripcion: string | null;
   seo_imagen_url: string | null;
+  documentos_drive_url: string | null;
   retreat_fechas: FilaFecha[];
   retreat_ideas: FilaIdea[];
   retreat_videos: FilaVideo[];
@@ -140,6 +141,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       descripcion: retreat.seo_descripcion ?? undefined,
       imagenUrl: retreat.seo_imagen_url ?? undefined,
     },
+    documentosDriveUrl: retreat.documentos_drive_url ?? undefined,
     fechas: ordenar(retreat.retreat_fechas).map((f) => ({
       label: f.label,
       start: f.fecha_inicio,
