@@ -1,18 +1,13 @@
-import Image from "next/image";
 import type { RetreatEvent } from "@/types/retreat";
 import Reveal from "./Reveal";
 
-// Anchos variados puramente decorativos — se reparten en orden sobre las
-// fotos que vengan en `retreat.fotosDecorativas`, sin importar cuántas sean.
-const ANCHOS = [
-  "min-w-[220px] sm:flex-[420]",
-  "min-w-[160px] sm:flex-[260]",
-  "min-w-[200px] sm:flex-[340]",
-  "min-w-[140px] sm:flex-[220]",
-  "min-w-[180px] sm:flex-[300]",
-];
-
-/** Franja decorativa de fotos entre "guías" e "historia" — puramente visual, sin copy. */
+/**
+ * Franja decorativa de fotos entre "guías" e "historia" — puramente visual,
+ * sin copy. Altura fija (h-[180px]/220px/280px según breakpoint, igual para
+ * todas), ancho libre: cada foto conserva su proporción real (`h-full
+ * w-auto`), así que una foto horizontal queda ancha y una vertical angosta,
+ * sin recortar nada ni forzar un patrón de anchos.
+ */
 export default function PhotoStrip({ retreat }: { retreat: RetreatEvent }) {
   return (
     <div
@@ -23,12 +18,9 @@ export default function PhotoStrip({ retreat }: { retreat: RetreatEvent }) {
       }}
     >
       {retreat.fotosDecorativas.map((src, i) => (
-        <Reveal
-          key={src}
-          delay={i * 90}
-          className={`relative h-full flex-none overflow-hidden rounded-3xl ${ANCHOS[i % ANCHOS.length]}`}
-        >
-          <Image src={src} alt="" fill sizes="420px" className="object-cover" />
+        <Reveal key={src} delay={i * 90} className="h-full flex-none overflow-hidden rounded-3xl">
+          {/* eslint-disable-next-line @next/next/no-img-element -- ancho intrínseco según la proporción real de cada foto; next/image con `fill` obliga a fijar el ancho de antemano. */}
+          <img src={src} alt="" className="h-full w-auto" />
         </Reveal>
       ))}
     </div>

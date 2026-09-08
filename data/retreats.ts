@@ -31,6 +31,7 @@ export interface FilaVideo extends FilaOrdenable {
   nombre: string;
   cita: string;
   youtube_id: string | null;
+  portada_url: string | null;
 }
 export interface FilaGuia extends FilaOrdenable {
   id: string;
@@ -54,13 +55,10 @@ export interface FilaRetreat {
   nombre: string;
   bajada: string;
   lugar: string;
-  como_llegar: string;
-  mapa_url: string;
   hora_inicio: string;
   hora_termino: string;
   costo: string;
   incluye: string;
-  cuotas_disponibles: boolean;
   cupos: string;
   cupos_descripcion: string;
   inscripcion_url: string;
@@ -101,7 +99,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       `*,
       retreat_fechas ( label, fecha_inicio, fecha_termino, orden ),
       retreat_ideas ( titulo, descripcion, orden ),
-      retreat_videos ( id, nombre, cita, youtube_id, orden ),
+      retreat_videos ( id, nombre, cita, youtube_id, portada_url, orden ),
       retreat_guias ( id, nombre, rol, foto_url, foto_forma, orden ),
       retreat_faq ( pregunta, respuesta, enlace_texto, enlace_href, orden ),
       retreat_photo_strip ( foto_url, orden )`,
@@ -122,13 +120,10 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
     nombre: retreat.nombre,
     bajada: retreat.bajada,
     lugar: retreat.lugar,
-    comoLlegar: retreat.como_llegar,
-    mapaUrl: retreat.mapa_url,
     horaInicio: retreat.hora_inicio,
     horaTermino: retreat.hora_termino,
     costo: retreat.costo,
     incluye: retreat.incluye,
-    cuotasDisponibles: retreat.cuotas_disponibles,
     cupos: retreat.cupos,
     cuposDescripcion: retreat.cupos_descripcion,
     inscripcionUrl: retreat.inscripcion_url,
@@ -159,6 +154,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       nombre: v.nombre,
       cita: v.cita,
       youtubeId: v.youtube_id ?? undefined,
+      portadaUrl: v.portada_url ?? undefined,
     })),
     guias: ordenar(retreat.retreat_guias).map((g) => ({
       id: g.id,

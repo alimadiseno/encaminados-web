@@ -29,6 +29,8 @@ export interface VideoTestimonio {
   id: string;
   /** Si no hay video real todavía, se deja sin youtubeId — la cita igual se muestra. */
   youtubeId?: string;
+  /** Reemplaza la miniatura automática de YouTube (i.ytimg.com/vi/{youtubeId}) cuando se quiere una propia. */
+  portadaUrl?: string;
   nombre: string;
   cita: string;
 }
@@ -68,13 +70,10 @@ export interface RetreatEvent {
   bajada: string;
   fechas: DateRange[];
   lugar: string;
-  comoLlegar: string;
-  mapaUrl: string;
   horaInicio: string;
   horaTermino: string;
   costo: string;
   incluye: string;
-  cuotasDisponibles: boolean;
   cupos: string;
   cuposDescripcion: string;
   inscripcionUrl: string;

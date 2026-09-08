@@ -12,6 +12,7 @@ import {
   KEY_ARCHIVO_SEO,
   keyArchivoGuia,
   keyArchivoDecorativa,
+  keyArchivoVideoPortada,
   type DatosFormularioAdmin,
 } from "@/app/admin/tipos";
 
@@ -120,6 +121,13 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
       })),
     );
 
+    const videosConPortada = await Promise.all(
+      datos.videos.map(async (v) => ({
+        ...v,
+        portadaUrl: await subirImagenSiCorresponde(supabase, formData, keyArchivoVideoPortada(v.clientId), v.portadaUrl),
+      })),
+    );
+
     const fotosConUrl = await Promise.all(
       datos.fotosDecorativas.map(async (f) => ({
         ...f,
@@ -133,13 +141,10 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
         nombre: datos.nombre,
         bajada: datos.bajada,
         lugar: datos.lugar,
-        como_llegar: datos.comoLlegar,
-        mapa_url: datos.mapaUrl,
         hora_inicio: datos.horaInicio,
         hora_termino: datos.horaTermino,
         costo: datos.costo,
         incluye: datos.incluye,
-        cuotas_disponibles: datos.cuotasDisponibles,
         cupos: datos.cupos,
         cupos_descripcion: datos.cuposDescripcion,
         inscripcion_url: datos.inscripcionUrl,
@@ -194,12 +199,13 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
       supabase,
       "retreat_videos",
       retreatId,
-      datos.videos.map((v, i) => ({
+      videosConPortada.map((v, i) => ({
         retreat_id: retreatId,
         orden: i,
         nombre: v.nombre,
         cita: v.cita,
         youtube_id: v.youtubeId || null,
+        portada_url: v.portadaUrl || null,
       })),
     );
 

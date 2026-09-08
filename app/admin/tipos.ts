@@ -29,6 +29,7 @@ export interface VideoEditable {
   nombre: string;
   cita: string;
   youtubeId: string;
+  portadaUrl: string;
 }
 
 export interface GuiaEditable {
@@ -56,13 +57,10 @@ export interface DatosFormularioAdmin {
   nombre: string;
   bajada: string;
   lugar: string;
-  comoLlegar: string;
-  mapaUrl: string;
   horaInicio: string;
   horaTermino: string;
   costo: string;
   incluye: string;
-  cuotasDisponibles: boolean;
   cupos: string;
   cuposDescripcion: string;
   inscripcionUrl: string;
@@ -85,4 +83,5 @@ export const KEY_ARCHIVO_SECTION_DIVIDER = "file:sectionDivider";
 export const KEY_ARCHIVO_HISTORIA = "file:historiaImagen";
 export const KEY_ARCHIVO_SEO = "file:seoImagen";
 export const keyArchivoGuia = (clientId: string) => `file:guia:${clientId}`;
+export const keyArchivoVideoPortada = (clientId: string) => `file:videoPortada:${clientId}`;
 export const keyArchivoDecorativa = (clientId: string) => `file:decorativa:${clientId}`;

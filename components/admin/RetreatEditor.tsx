@@ -11,6 +11,7 @@ import {
   KEY_ARCHIVO_SEO,
   keyArchivoGuia,
   keyArchivoDecorativa,
+  keyArchivoVideoPortada,
   type DatosFormularioAdmin,
   type FechaEditable,
   type IdeaEditable,
@@ -40,13 +41,10 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     nombre: retreat.nombre,
     bajada: retreat.bajada,
     lugar: retreat.lugar,
-    comoLlegar: retreat.comoLlegar,
-    mapaUrl: retreat.mapaUrl,
     horaInicio: retreat.horaInicio,
     horaTermino: retreat.horaTermino,
     costo: retreat.costo,
     incluye: retreat.incluye,
-    cuotasDisponibles: retreat.cuotasDisponibles,
     cupos: retreat.cupos,
     cuposDescripcion: retreat.cuposDescripcion,
     inscripcionUrl: retreat.inscripcionUrl,
@@ -58,6 +56,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
       nombre: v.nombre,
       cita: v.cita,
       youtubeId: v.youtubeId ?? "",
+      portadaUrl: v.portadaUrl ?? "",
     })),
     guias: retreat.guias.map((g) => ({
       clientId: g.id,
@@ -170,11 +169,11 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
 
       <div className="mx-auto flex max-w-[1100px] items-start gap-8 px-6 py-10 sm:px-10">
         <aside className="sticky top-24 flex w-full flex-none flex-row gap-2 overflow-x-auto sm:w-48 sm:flex-col sm:overflow-visible">
-          <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
-            Contenido
-          </button>
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
+          </button>
+          <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
+            Contenido
           </button>
           <button type="button" onClick={() => setVista("seo")} className={claseNavPrincipal(vista === "seo")}>
             SEO
@@ -206,7 +205,12 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
             <section className="flex flex-col gap-4">
               <h2 className="h2-section text-ink">Hero</h2>
               <CampoTextarea label="Texto del hero (subtítulo)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
-              <CampoArchivo label="Foto del hero" urlActual={datos.heroImagenUrl} name={KEY_ARCHIVO_HERO} />
+              <CampoArchivo
+                label="Foto del hero"
+                urlActual={datos.heroImagenUrl}
+                name={KEY_ARCHIVO_HERO}
+                ayuda="1920×1080 px o más, horizontal"
+              />
             </section>
           </div>
 
@@ -216,6 +220,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 label="Foto entre el hero y esta sección"
                 urlActual={datos.sectionDividerImagenUrl}
                 name={KEY_ARCHIVO_SECTION_DIVIDER}
+                ayuda="678×302 px (proporción 2.24:1)"
               />
               <ListaEditable<IdeaEditable>
                 titulo="Qué es Encaminados"
@@ -237,7 +242,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
               titulo="Testimonios"
               items={datos.videos}
               onChange={(videos) => set("videos", videos)}
-              nuevoItem={() => ({ clientId: idCliente(), nombre: "", cita: "", youtubeId: "" })}
+              nuevoItem={() => ({ clientId: idCliente(), nombre: "", cita: "", youtubeId: "", portadaUrl: "" })}
               renderItem={(item, actualizar) => (
                 <>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -249,6 +254,15 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                     />
                   </div>
                   <CampoTextarea label="Cita" value={item.cita} onChange={(v) => actualizar({ cita: v })} filas={2} />
+                  <div className="flex flex-col gap-1.5">
+                    <CampoArchivo
+                      label="Miniatura propia (opcional)"
+                      urlActual={item.portadaUrl}
+                      name={keyArchivoVideoPortada(item.clientId)}
+                      ayuda="800×450 px (proporción 16:9)"
+                    />
+                    <p className="text-xs text-ink/50">Si no subes una, se usa la miniatura automática de YouTube.</p>
+                  </div>
                 </>
               )}
             />
@@ -268,7 +282,12 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                       <CampoTexto label="Rol" value={item.rol} onChange={(v) => actualizar({ rol: v })} />
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <CampoArchivo label="Foto" urlActual={item.fotoUrl} name={keyArchivoGuia(item.clientId)} />
+                      <CampoArchivo
+                        label="Foto"
+                        urlActual={item.fotoUrl}
+                        name={keyArchivoGuia(item.clientId)}
+                        ayuda="400×520 px, vertical"
+                      />
                       <CampoSelect
                         label="Forma de la foto"
                         value={item.fotoForma}
@@ -292,14 +311,27 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
           </div>
 
           <div className={claseSeccion("franja-fotos")}>
-            <ListaEditable<FotoEditable>
-              titulo="Franja de fotos"
-              items={datos.fotosDecorativas}
-              onChange={(fotosDecorativas) => set("fotosDecorativas", fotosDecorativas)}
-              nuevoItem={() => ({ clientId: idCliente(), url: "" })}
-              renderItem={(item) => <CampoArchivo label="Foto" urlActual={item.url} name={keyArchivoDecorativa(item.clientId)} />}
-              etiquetaAgregar="+ Agregar foto"
-            />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs text-ink/50">
+                Todas se muestran con el mismo alto y cada una conserva su propio ancho según su proporción — no hace
+                falta recortarlas antes de subirlas.
+              </p>
+              <ListaEditable<FotoEditable>
+                titulo="Franja de fotos"
+                items={datos.fotosDecorativas}
+                onChange={(fotosDecorativas) => set("fotosDecorativas", fotosDecorativas)}
+                nuevoItem={() => ({ clientId: idCliente(), url: "" })}
+                renderItem={(item) => (
+                  <CampoArchivo
+                    label="Foto"
+                    urlActual={item.url}
+                    name={keyArchivoDecorativa(item.clientId)}
+                    ayuda="alto ≥600 px, cualquier ancho"
+                  />
+                )}
+                etiquetaAgregar="+ Agregar foto"
+              />
+            </div>
           </div>
 
           <div className={claseSeccion("historia")}>
@@ -316,7 +348,12 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 checked={datos.historia.pendiente}
                 onChange={(v) => set("historia", { ...datos.historia, pendiente: v })}
               />
-              <CampoArchivo label="Foto de la sección" urlActual={datos.historia.imagenUrl} name={KEY_ARCHIVO_HISTORIA} />
+              <CampoArchivo
+                label="Foto de la sección"
+                urlActual={datos.historia.imagenUrl}
+                name={KEY_ARCHIVO_HISTORIA}
+                ayuda="1000×800 px o más"
+              />
             </section>
           </div>
 
@@ -347,19 +384,6 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                   <CampoTexto label="Cupos" value={datos.cupos} onChange={(v) => set("cupos", v)} />
                   <CampoTexto label="Descripción de cupos" value={datos.cuposDescripcion} onChange={(v) => set("cuposDescripcion", v)} />
                 </div>
-              </section>
-
-              <section className="flex flex-col gap-4">
-                <h3 className="h3-section text-ink">Otros datos (sin uso en el sitio por ahora)</h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <CampoTexto label="Cómo llegar" value={datos.comoLlegar} onChange={(v) => set("comoLlegar", v)} />
-                  <CampoTexto label="URL del mapa" value={datos.mapaUrl} onChange={(v) => set("mapaUrl", v)} />
-                </div>
-                <CampoCheckbox
-                  label="Ofrece pago en cuotas"
-                  checked={datos.cuotasDisponibles}
-                  onChange={(v) => set("cuotasDisponibles", v)}
-                />
               </section>
             </div>
           </div>
@@ -437,6 +461,7 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
                 label="Imagen al compartir el link (redes sociales)"
                 urlActual={datos.seo.imagenUrl}
                 name={KEY_ARCHIVO_SEO}
+                ayuda="1200×630 px (estándar para WhatsApp, Facebook, etc.)"
               />
             </section>
           </div>

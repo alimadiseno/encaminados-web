@@ -7,6 +7,7 @@ import Reveal from "./Reveal";
 function VideoCard({ video }: { video: VideoTestimonio }) {
   const [playing, setPlaying] = useState(false);
   const tieneVideo = Boolean(video.youtubeId);
+  const portada = video.portadaUrl || (video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg` : undefined);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-card">
@@ -26,7 +27,7 @@ function VideoCard({ video }: { video: VideoTestimonio }) {
             aria-label={`Reproducir el testimonio de ${video.nombre}`}
             className="absolute inset-0 flex h-full w-full items-center justify-center"
             style={{
-              backgroundImage: `url(https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg)`,
+              backgroundImage: `url(${portada})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

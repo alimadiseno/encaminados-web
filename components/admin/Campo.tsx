@@ -102,11 +102,14 @@ export function CampoArchivo({
   label,
   urlActual,
   name,
+  ayuda,
 }: {
   label: string;
   urlActual: string;
   /** name del <input type="file"> — el envío del <form> lo agrega solo al FormData, no necesita estado controlado. */
   name: string;
+  /** Tamaño recomendado u otra indicación breve, ej. "1920×1080 px". */
+  ayuda?: string;
 }) {
   const [nombreElegido, setNombreElegido] = useState<string | null>(null);
 
@@ -134,6 +137,7 @@ export function CampoArchivo({
         </label>
       </div>
       {nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}
+      {ayuda && <p className="text-xs text-ink/50">Tamaño recomendado: {ayuda}</p>}
     </div>
   );
 }

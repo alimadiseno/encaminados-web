@@ -47,6 +47,9 @@ export default function Footer({ retreat }: { retreat: RetreatEvent }) {
 
         <div className="flex flex-col items-center gap-3 border-t border-ink/10 pt-6">
           <p className="text-center text-sm text-ink">Una iniciativa de #familiaRC · Regnum Christi Chile</p>
+          <Link href="/admin" className="text-xs text-ink/40 no-underline transition-colors hover:text-ink/70">
+            Admin
+          </Link>
         </div>
       </Reveal>
     </footer>
