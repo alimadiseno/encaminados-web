@@ -37,7 +37,7 @@ export default function GuidesSection({ retreat }: { retreat: RetreatEvent }) {
           </Reveal>
 
           <Reveal delay={160} className="flex flex-1 items-center">
-            <p className="text-base leading-[1.7] text-ink italic">{retreat.guiasIntro}</p>
+            <p className="text-base leading-[1.7] whitespace-pre-line text-ink">{retreat.guiasIntro}</p>
           </Reveal>
         </div>
       </div>

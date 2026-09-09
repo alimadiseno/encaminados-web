@@ -14,6 +14,7 @@ export function ListaEditable<T extends ConId>({
   nuevoItem,
   renderItem,
   etiquetaAgregar = "+ Agregar",
+  posicionAgregar = "arriba",
 }: {
   titulo: string;
   items: T[];
@@ -21,6 +22,8 @@ export function ListaEditable<T extends ConId>({
   nuevoItem: () => T;
   renderItem: (item: T, actualizar: (parcial: Partial<T>) => void) => ReactNode;
   etiquetaAgregar?: string;
+  /** "arriba" (junto al título, por defecto) o "abajo" (al final de la lista de filas). */
+  posicionAgregar?: "arriba" | "abajo";
 }) {
   function actualizarFila(clientId: string, parcial: Partial<T>) {
     onChange(items.map((item) => (item.clientId === clientId ? { ...item, ...parcial } : item)));
@@ -30,17 +33,21 @@ export function ListaEditable<T extends ConId>({
     onChange(items.filter((item) => item.clientId !== clientId));
   }
 
+  const botonAgregar = (
+    <button
+      type="button"
+      onClick={() => onChange([...items, nuevoItem()])}
+      className="self-start rounded-full border-2 border-terracotta px-4 py-1.5 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
+    >
+      {etiquetaAgregar}
+    </button>
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <h3 className="h3-section text-ink">{titulo}</h3>
-        <button
-          type="button"
-          onClick={() => onChange([...items, nuevoItem()])}
-          className="rounded-full border-2 border-terracotta px-4 py-1.5 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
-        >
-          {etiquetaAgregar}
-        </button>
+        {posicionAgregar === "arriba" && botonAgregar}
       </div>
 
       {items.length === 0 && <p className="text-sm text-ink/50">Sin filas todavía.</p>}
@@ -59,6 +66,8 @@ export function ListaEditable<T extends ConId>({
           </div>
         ))}
       </div>
+
+      {posicionAgregar === "abajo" && botonAgregar}
     </div>
   );
 }

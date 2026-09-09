@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 
 const claseInput =
   "w-full rounded-xl border-2 border-ink/15 bg-cream px-4 py-2.5 text-base text-ink outline-none focus-visible:border-terracotta";
@@ -112,14 +112,25 @@ export function CampoArchivo({
   ayuda?: string;
 }) {
   const [nombreElegido, setNombreElegido] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const urlAMostrar = previewUrl ?? urlActual;
+
+  function alElegirArchivo(e: ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0];
+    setNombreElegido(archivo?.name ?? null);
+    setPreviewUrl((anterior) => {
+      if (anterior) URL.revokeObjectURL(anterior);
+      return archivo ? URL.createObjectURL(archivo) : null;
+    });
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-1.5 text-sm text-ink">
       <span className="font-semibold">{label}</span>
       <div className="flex items-center gap-3">
-        {urlActual ? (
-          // eslint-disable-next-line @next/next/no-img-element -- previsualización de una URL arbitraria (Storage o /public), no vale la pena el loader de next/image acá.
-          <img src={urlActual} alt="" className="h-16 w-16 flex-none rounded-lg object-cover" />
+        {urlAMostrar ? (
+          // eslint-disable-next-line @next/next/no-img-element -- previsualización de una URL arbitraria (Storage, /public o blob: local), no vale la pena el loader de next/image acá.
+          <img src={urlAMostrar} alt="" className="h-16 w-16 flex-none rounded-lg object-cover" />
         ) : (
           <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-sage/40 text-center text-[11px] text-ink/50">
             Sin foto
@@ -127,13 +138,7 @@ export function CampoArchivo({
         )}
         <label className="inline-flex min-h-[40px] flex-none cursor-pointer items-center justify-center rounded-full border-2 border-terracotta px-4 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach">
           Elegir foto
-          <input
-            type="file"
-            name={name}
-            accept="image/*"
-            onChange={(e) => setNombreElegido(e.target.files?.[0]?.name ?? null)}
-            className="sr-only"
-          />
+          <input type="file" name={name} accept="image/*" onChange={alElegirArchivo} className="sr-only" />
         </label>
       </div>
       {nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}

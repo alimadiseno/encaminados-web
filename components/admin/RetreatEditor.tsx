@@ -333,6 +333,7 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
                   />
                 )}
                 etiquetaAgregar="+ Agregar foto"
+                posicionAgregar="abajo"
               />
             </div>
           </div>

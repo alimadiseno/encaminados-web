@@ -17,7 +17,7 @@ export default function HistorySection({ retreat }: { retreat: RetreatEvent }) {
             className={`text-base leading-[1.7] text-ink ${retreat.historia.pendiente ? "italic" : ""}`}
           >
             {retreat.historia.parrafos.map((p, i) => (
-              <p key={i} className="mb-4 last:mb-0">
+              <p key={i} className="mb-4 whitespace-pre-line last:mb-0">
                 {p}
               </p>
             ))}
