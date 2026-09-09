@@ -519,22 +519,27 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
+            <img src="/icons/partner.svg" alt="" className="mb-1 size-5" />
             <p className="text-xs text-ink/60">Total parejas inscritas</p>
             <p className="h3-section text-ink">{metricas.total}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
+            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
             <p className="text-xs text-ink/60">Pago pendiente</p>
             <p className="h3-section text-ink">{metricas.porEstado.pendiente}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
+            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
             <p className="text-xs text-ink/60">Pago parcial</p>
             <p className="h3-section text-ink">{metricas.porEstado.parcial}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
+            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
             <p className="text-xs text-ink/60">Pagado completo</p>
             <p className="h3-section text-ink">{metricas.porEstado.pagado}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
+            <img src="/icons/account-balance.svg" alt="" className="mb-1 size-5" />
             <p className="text-xs text-ink/60">Recaudado</p>
             <p className="h3-section text-ink">${metricas.recaudado.toLocaleString("es-CL")}</p>
           </div>
@@ -542,7 +547,10 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-3 rounded-2xl bg-card p-5">
-            <h2 className="h3-section text-ink">Alergias / restricciones alimentarias</h2>
+            <h2 className="flex items-center gap-2 h3-section text-ink">
+              <img src="/icons/grocery.svg" alt="" className="size-5" />
+              Alergias / restricciones alimentarias
+            </h2>
             {alergias.positivas.length === 0 && alergias.negativas === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
@@ -568,7 +576,10 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
           </div>
 
           <div className="flex flex-col gap-3 rounded-2xl bg-card p-5">
-            <h2 className="h3-section text-ink">Apoderados/colaboradores de un colegio Red RC</h2>
+            <h2 className="flex items-center gap-2 h3-section text-ink">
+              <img src="/icons/network-node.svg" alt="" className="size-5" />
+              Apoderados/colaboradores de un colegio Red RC
+            </h2>
             {colegioRC.length === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
