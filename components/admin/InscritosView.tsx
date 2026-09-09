@@ -243,21 +243,21 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
     return (
       <>
         <tr className="border-b border-ink/10 align-top">
-          <td className="px-3 py-3 font-semibold whitespace-nowrap">{apellidosPareja(inscrito)}</td>
-          <td className="px-3 py-3">
+          <td className="px-2 py-2.5 font-semibold whitespace-nowrap">{apellidosPareja(inscrito)}</td>
+          <td className="px-2 py-2.5">
             <Persona nombre={inscrito.nombreEsposa} telefono={inscrito.telefonoEsposa} email={inscrito.emailEsposa} />
           </td>
-          <td className="px-3 py-3">
+          <td className="px-2 py-2.5">
             <Persona nombre={inscrito.nombreMarido} telefono={inscrito.telefonoMarido} email={inscrito.emailMarido} />
           </td>
-          <td className="px-3 py-3">{inscrito.fechaElegida}</td>
-          <td className="px-3 py-3">
+          <td className="px-2 py-2.5">{inscrito.fechaElegida}</td>
+          <td className="px-2 py-2.5">
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${claseChip(inscrito.estadoPago)}`}>
               {ETIQUETA_ESTADO[inscrito.estadoPago]}
             </span>
           </td>
-          <td className="px-3 py-3">{inscrito.monto != null ? `$${inscrito.monto.toLocaleString("es-CL")}` : "—"}</td>
-          <td className="px-3 py-3 whitespace-nowrap">
+          <td className="px-2 py-2.5">{inscrito.monto != null ? `$${inscrito.monto.toLocaleString("es-CL")}` : "—"}</td>
+          <td className="px-2 py-2.5 whitespace-nowrap">
             <button type="button" onClick={() => setMostrarDetalle((v) => !v)} className="text-xs text-ink/60 underline underline-offset-2">
               {mostrarDetalle ? "Ocultar" : "Ver más"}
             </button>{" "}
@@ -273,13 +273,13 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
 
   return (
     <tr className="border-b border-ink/10 bg-card">
-      <td className="px-3 py-3 font-semibold" colSpan={2}>
+      <td className="px-2 py-2.5 font-semibold" colSpan={2}>
         {apellidosPareja(inscrito)}
         <span className="block text-xs font-normal text-ink/60">
           {inscrito.nombreEsposa} y {inscrito.nombreMarido}
         </span>
       </td>
-      <td className="px-3 py-3" colSpan={5}>
+      <td className="px-2 py-2.5" colSpan={5}>
         <form
           action={(formData) => {
             formAction(formData);
@@ -639,16 +639,16 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
           <p className="rounded-2xl bg-card px-3 py-8 text-center text-ink/50">No hay inscritos que calcen con este filtro.</p>
         ) : vista === "tabla" ? (
           <div className="overflow-x-auto rounded-2xl bg-card">
-            <table className="w-full min-w-[1000px] text-left text-sm">
+            <table className="w-full min-w-[820px] text-left text-sm">
               <thead>
                 <tr className="border-b border-ink/15 text-xs text-ink/60 uppercase">
-                  <th className="px-3 py-3 font-semibold">Familia</th>
-                  <th className="px-3 py-3 font-semibold">Esposa</th>
-                  <th className="px-3 py-3 font-semibold">Marido</th>
-                  <th className="px-3 py-3 font-semibold">Fecha</th>
-                  <th className="px-3 py-3 font-semibold">Estado de pago</th>
-                  <th className="px-3 py-3 font-semibold">Monto</th>
-                  <th className="px-3 py-3 font-semibold" />
+                  <th className="px-2 py-2.5 font-semibold">Familia</th>
+                  <th className="px-2 py-2.5 font-semibold">Esposa</th>
+                  <th className="px-2 py-2.5 font-semibold">Marido</th>
+                  <th className="px-2 py-2.5 font-semibold">Fecha</th>
+                  <th className="px-2 py-2.5 font-semibold">Estado de pago</th>
+                  <th className="px-2 py-2.5 font-semibold">Monto</th>
+                  <th className="px-2 py-2.5 font-semibold" />
                 </tr>
               </thead>
               <tbody>

@@ -158,7 +158,7 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
       <AdminHeader />
 
       <div className="flex flex-1 flex-col sm:flex-row sm:items-stretch">
-        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto px-6 py-6 sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:self-start sm:overflow-visible sm:px-10 sm:py-10">
+        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto px-6 py-6 sm:sticky sm:top-24 sm:w-64 sm:flex-col sm:self-start sm:overflow-visible sm:px-8 sm:py-10">
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
           </button>
