@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import type { RetreatEvent } from "@/types/retreat";
 import { guardarRetreat, type GuardarState } from "@/app/admin/actions";
 import AdminHeader from "./AdminHeader";
@@ -138,6 +138,17 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
   const [vista, setVista] = useState<Vista>("contenido");
   const [seccion, setSeccion] = useState<SeccionContenido>("hero");
+
+  // React 19 reinicia el <form> (incluyendo checkboxes controlados) apenas termina la
+  // Server Action, y como su valor lógico no cambió desde la última vez que React lo
+  // escribió, el reconciliador no vuelve a tocar el DOM — dejando el checkbox mostrando
+  // el valor previo al guardado aunque `datos` (y lo guardado en Supabase) sea correcto.
+  // Cambiar la `key` del checkbox tras cada guardado fuerza a React a recrearlo y
+  // volver a aplicar el valor real.
+  const [guardadoKey, setGuardadoKey] = useState(0);
+  useEffect(() => {
+    if (state !== estadoInicialGuardado) setGuardadoKey((k) => k + 1);
+  }, [state]);
 
   function set<K extends keyof DatosFormularioAdmin>(clave: K, valor: DatosFormularioAdmin[K]) {
     setDatos((prev) => ({ ...prev, [clave]: valor }));
@@ -348,6 +359,7 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
                 filas={8}
               />
               <CampoCheckbox
+                key={guardadoKey}
                 label="Marcar como texto pendiente de confirmar (se muestra en cursiva)"
                 checked={datos.historia.pendiente}
                 onChange={(v) => set("historia", { ...datos.historia, pendiente: v })}
