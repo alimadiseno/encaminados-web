@@ -66,7 +66,10 @@ function agruparRespuestas(valores: (string | undefined)[]): Conteo[] {
   return [...mapa.values()].sort((a, b) => b.cantidad - a.cantidad);
 }
 
-/** Igual que agruparRespuestas, pero pliega lo que sobre del límite en un último grupo "Otras respuestas" — para no terminar con más colores que la paleta categórica tiene slots. */
+/** Tope de barras individuales antes de plegar el resto en un grupo "Otras respuestas afirmativas". */
+const MAX_SEGMENTOS_SI = 8;
+
+/** Igual que agruparRespuestas, pero pliega lo que sobre del límite en un último grupo "Otras respuestas". */
 function agruparConLimite(valores: (string | undefined)[], limite: number): Conteo[] {
   const agrupado = agruparRespuestas(valores);
   if (agrupado.length <= limite) return agrupado;
@@ -243,34 +246,34 @@ function BarraCategoria({ etiqueta, cantidad, maximo }: { etiqueta: string; cant
   );
 }
 
-/**
- * Paleta categórica validada (8 tonos, orden fijo — nunca se ciclan) del
- * skill de dataviz: separación CVD y contraste ya verificados con
- * scripts/validate_palette.js, así que los colores se toman tal cual, sin
- * inventar tonos "de marca" a ojo.
- */
-const COLORES_CATEGORICOS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
-/** Color de reserva si alguna vez aparece una etiqueta fuera del mapa fijo (no debería pasar en la práctica). */
-const COLOR_RESERVA = "#89878199";
-
 interface SegmentoColor extends Conteo {
   color: string;
 }
 
 /**
- * Asigna un color fijo por etiqueta a partir del orden de frecuencia sobre
- * el set SIN filtrar — así "Sí, del colegio Cumbres" mantiene su color
- * aunque el filtro de fecha cambie qué tan seguido aparece dentro del
- * subconjunto visible ("el color sigue a la entidad, nunca a su ranking").
+ * Colores de marca por colegio (pedidos puntualmente, no la paleta genérica
+ * del skill de dataviz) — definidos como tokens del sistema de diseño en
+ * app/globals.css bajo "Complementarios para gráficos". El color sigue al
+ * nombre del colegio mencionado en la respuesta, no a su frecuencia, así que
+ * se mantiene igual sin importar qué tan seguido aparece bajo cada filtro.
  */
-function mapaDeColores(etiquetasBase: Conteo[]): Map<string, string> {
-  const mapa = new Map<string, string>();
-  etiquetasBase.forEach((c, i) => mapa.set(claveTexto(c.etiqueta), COLORES_CATEGORICOS[i % COLORES_CATEGORICOS.length]));
-  return mapa;
+const COLOR_POR_COLEGIO: { nombre: string; color: string }[] = [
+  { nombre: "cumbres", color: "var(--color-terracotta)" },
+  { nombre: "highlands", color: "var(--color-chart-clay)" },
+  { nombre: "everest", color: "var(--color-chart-wheat)" },
+  { nombre: "la cruz", color: "var(--color-chart-orchid)" },
+  { nombre: "san isidro", color: "var(--color-chart-mint)" },
+];
+/** Para una respuesta afirmativa que no menciona ninguno de los colegios de arriba (ej. "Fuimos" quedaría acá si algún día se agrupara como "sí"). */
+const COLOR_COLEGIO_RESERVA = "var(--color-ink)";
+
+function colorPorColegio(etiqueta: string): string {
+  const normalizada = normalizar(etiqueta);
+  return COLOR_POR_COLEGIO.find((c) => normalizada.includes(c.nombre))?.color ?? COLOR_COLEGIO_RESERVA;
 }
 
-function conColor(segmentos: Conteo[], colores: Map<string, string>): SegmentoColor[] {
-  return segmentos.map((s) => ({ ...s, color: colores.get(claveTexto(s.etiqueta)) ?? COLOR_RESERVA }));
+function conColorDeColegio(segmentos: Conteo[]): SegmentoColor[] {
+  return segmentos.map((s) => ({ ...s, color: colorPorColegio(s.etiqueta) }));
 }
 
 /**
@@ -710,14 +713,6 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
     () => (filtroFechaColegio === "todas" ? inscritos : inscritos.filter((i) => coincideFecha(i.fechaElegida, filtroFechaColegio))),
     [inscritos, filtroFechaColegio],
   );
-  const coloresColegio = useMemo(() => {
-    const afirmativasTodas = inscritos
-      .map((i) => i.detalleExtra?.colegioRC?.trim())
-      .filter((v): v is string => Boolean(v))
-      .filter(esRespuestaAfirmativa);
-    return mapaDeColores(agruparConLimite(afirmativasTodas, COLORES_CATEGORICOS.length));
-  }, [inscritos]);
-
   const colegio = useMemo(() => {
     const respuestas = inscritosColegio
       .map((i) => i.detalleExtra?.colegioRC?.trim())
@@ -726,12 +721,12 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
     const negativas = respuestas.filter(esRespuestaNegativa).length;
     const otras = respuestas.filter((v) => !esRespuestaAfirmativa(v) && !esRespuestaNegativa(v));
     return {
-      si: conColor(agruparConLimite(afirmativas, COLORES_CATEGORICOS.length), coloresColegio),
+      si: conColorDeColegio(agruparConLimite(afirmativas, MAX_SEGMENTOS_SI)),
       siTotal: afirmativas.length,
       no: negativas,
       otras: agruparRespuestas(otras),
     };
-  }, [inscritosColegio, coloresColegio]);
+  }, [inscritosColegio]);
   const maxColegio = Math.max(1, colegio.siTotal, colegio.no, ...colegio.otras.map((c) => c.cantidad));
 
   const inscritosAlergias = useMemo(

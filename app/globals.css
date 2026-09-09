@@ -13,6 +13,12 @@
   --color-icon-bg: #ffc5a0; /* surface/icon */
   --color-almost-white: #fdfcfa; /* bg/admin-content */
 
+  /* ---- Complementarios para gráficos (series categóricas en paneles admin) ---- */
+  --color-chart-clay: #e69a6a;
+  --color-chart-wheat: #e8ce84;
+  --color-chart-orchid: #c173b9;
+  --color-chart-mint: #80c6ac;
+
   --font-display: var(--font-display), "Iowan Old Style", serif;
   --font-body: var(--font-body), "Segoe UI", sans-serif;
   --font-brand: var(--font-brand), sans-serif;
