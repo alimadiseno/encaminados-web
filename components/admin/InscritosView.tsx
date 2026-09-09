@@ -62,14 +62,50 @@ function agruparRespuestas(valores: (string | undefined)[]): Conteo[] {
   return [...mapa.values()].sort((a, b) => b.cantidad - a.cantidad);
 }
 
-function promedioHijos(valores: (string | undefined)[]): { promedio: number; respuestas: number } {
-  const numeros = valores
-    .map((v) => v?.trim())
-    .filter((v): v is string => Boolean(v))
-    .map((v) => Number(v.replace(",", ".")))
-    .filter((n) => Number.isFinite(n));
-  if (numeros.length === 0) return { promedio: 0, respuestas: 0 };
-  return { promedio: numeros.reduce((a, b) => a + b, 0) / numeros.length, respuestas: numeros.length };
+const CONECTORES_APELLIDO = new Set(["de", "del", "la", "los", "las"]);
+
+/**
+ * Heurística best-effort: en "Nombre y apellidos" chileno, los últimos dos
+ * "bloques" de palabras suelen ser apellido paterno + materno, así que se
+ * usa el segundo-desde-el-final como identificador de familia. No es
+ * infalible — nombres con dos nombres de pila y un solo apellido (ej.
+ * "María Jesús Ugarte") o apellidos compuestos con conectores ("del Rio")
+ * pueden salir mal identificados, no hay forma de evitarlo sin interpretar
+ * el texto.
+ */
+function apellido(nombreCompleto: string): string {
+  const palabras = nombreCompleto.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return "";
+
+  const bloques: string[] = [];
+  for (let i = 0; i < palabras.length; i++) {
+    if (CONECTORES_APELLIDO.has(palabras[i].toLowerCase())) {
+      // Encadena conectores seguidos ("de la Cerda") en un solo bloque en vez
+      // de partirlos por la mitad.
+      let fin = i;
+      while (fin < palabras.length && CONECTORES_APELLIDO.has(palabras[fin].toLowerCase())) fin++;
+      if (fin < palabras.length) {
+        bloques.push(palabras.slice(i, fin + 1).join(" "));
+        i = fin;
+      } else {
+        bloques.push(palabras.slice(i).join(" "));
+        i = palabras.length - 1;
+      }
+    } else {
+      bloques.push(palabras[i]);
+    }
+  }
+
+  return bloques.length >= 3 ? bloques[bloques.length - 2] : bloques[bloques.length - 1];
+}
+
+function nombreFamilia(inscrito: Inscrito): string {
+  return `Familia ${apellido(inscrito.nombreMarido)} ${apellido(inscrito.nombreEsposa)}`;
+}
+
+function esRespuestaNegativa(valor: string): boolean {
+  const limpio = valor.trim().toLowerCase();
+  return limpio === "no" || limpio === "n/a" || limpio === "na" || limpio.startsWith("ningun");
 }
 
 function BarraCategoria({ etiqueta, cantidad, maximo }: { etiqueta: string; cantidad: number; maximo: number }) {
@@ -99,11 +135,16 @@ function Persona({ nombre, telefono, email }: { nombre: string; telefono: string
 
 function ContenidoDetalle({ inscrito }: { inscrito: Inscrito }) {
   const detalle = inscrito.detalleExtra;
-  const entradas = detalle
+  const entradasDetalle = detalle
     ? (Object.keys(ETIQUETA_DETALLE) as (keyof DetalleExtra)[])
         .map((clave) => [ETIQUETA_DETALLE[clave], detalle[clave]] as const)
-        .filter(([, valor]) => Boolean(valor && valor.trim()))
+        .filter((entrada): entrada is [string, string] => Boolean(entrada[1] && entrada[1].trim()))
     : [];
+  const entradas: [string, string][] = [
+    ...(inscrito.metodoPago ? [["Método de pago", inscrito.metodoPago] as [string, string]] : []),
+    ...(inscrito.notas ? [["Notas", inscrito.notas] as [string, string]] : []),
+    ...entradasDetalle,
+  ];
 
   return (
     <div className="flex flex-col gap-3">
@@ -136,7 +177,7 @@ function ContenidoDetalle({ inscrito }: { inscrito: Inscrito }) {
 function FilaDetalle({ inscrito }: { inscrito: Inscrito }) {
   return (
     <tr className="border-b border-ink/10 bg-cream/60">
-      <td colSpan={9} className="px-3 py-4">
+      <td colSpan={8} className="px-3 py-4">
         <ContenidoDetalle inscrito={inscrito} />
       </td>
     </tr>
@@ -201,6 +242,7 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
     return (
       <>
         <tr className="border-b border-ink/10 align-top">
+          <td className="px-3 py-3 font-semibold whitespace-nowrap">{nombreFamilia(inscrito)}</td>
           <td className="px-3 py-3">
             <Persona nombre={inscrito.nombreEsposa} telefono={inscrito.telefonoEsposa} email={inscrito.emailEsposa} />
           </td>
@@ -214,10 +256,6 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
             </span>
           </td>
           <td className="px-3 py-3">{inscrito.monto != null ? `$${inscrito.monto.toLocaleString("es-CL")}` : "—"}</td>
-          <td className="px-3 py-3">{inscrito.metodoPago || "—"}</td>
-          <td className="px-3 py-3 max-w-[14rem] truncate" title={inscrito.notas ?? undefined}>
-            {inscrito.notas || "—"}
-          </td>
           <td className="px-3 py-3 whitespace-nowrap text-ink/60">{formatearFecha(inscrito.creadoEn)}</td>
           <td className="px-3 py-3 whitespace-nowrap">
             <button type="button" onClick={() => setMostrarDetalle((v) => !v)} className="text-xs text-ink/60 underline underline-offset-2">
@@ -235,8 +273,11 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
 
   return (
     <tr className="border-b border-ink/10 bg-card">
-      <td className="px-3 py-3 font-semibold" colSpan={3}>
-        {inscrito.nombreEsposa} y {inscrito.nombreMarido}
+      <td className="px-3 py-3 font-semibold" colSpan={2}>
+        {nombreFamilia(inscrito)}
+        <span className="block text-xs font-normal text-ink/60">
+          {inscrito.nombreEsposa} y {inscrito.nombreMarido}
+        </span>
       </td>
       <td className="px-3 py-3" colSpan={6}>
         <form
@@ -275,6 +316,7 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
     <div className="flex flex-col gap-4 rounded-2xl bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold text-terracotta">{nombreFamilia(inscrito)}</p>
           <Persona nombre={inscrito.nombreEsposa} telefono={inscrito.telefonoEsposa} email={inscrito.emailEsposa} />
           <Persona nombre={inscrito.nombreMarido} telefono={inscrito.telefonoMarido} email={inscrito.emailMarido} />
         </div>
@@ -459,16 +501,23 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
     return { total: inscritos.length, porEstado, recaudado };
   }, [inscritos]);
 
-  const alergias = useMemo(() => agruparRespuestas(inscritos.map((i) => i.detalleExtra?.alergias)), [inscritos]);
   const colegioRC = useMemo(() => agruparRespuestas(inscritos.map((i) => i.detalleExtra?.colegioRC)), [inscritos]);
   const maxColegioRC = Math.max(1, ...colegioRC.map((c) => c.cantidad));
-  const hijos = useMemo(() => promedioHijos(inscritos.map((i) => i.detalleExtra?.cantidadHijos)), [inscritos]);
+
+  const alergias = useMemo(() => {
+    const conRespuesta = inscritos
+      .map((i) => ({ inscrito: i, valor: i.detalleExtra?.alergias?.trim() }))
+      .filter((r): r is { inscrito: Inscrito; valor: string } => Boolean(r.valor));
+    const positivas = conRespuesta.filter((r) => !esRespuestaNegativa(r.valor));
+    const negativas = conRespuesta.filter((r) => esRespuestaNegativa(r.valor)).length;
+    return { positivas, negativas };
+  }, [inscritos]);
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8">
       <h1 className="h2-section text-ink">Inscritos</h1>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
             <p className="text-xs text-ink/60">Total parejas inscritas</p>
             <p className="h3-section text-ink">{metricas.total}</p>
@@ -489,29 +538,31 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
             <p className="text-xs text-ink/60">Recaudado</p>
             <p className="h3-section text-ink">${metricas.recaudado.toLocaleString("es-CL")}</p>
           </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <p className="text-xs text-ink/60">Promedio de hijos por pareja</p>
-            <p className="h3-section text-ink">
-              {hijos.respuestas > 0 ? hijos.promedio.toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"}
-            </p>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-3 rounded-2xl bg-card p-5">
             <h2 className="h3-section text-ink">Alergias / restricciones alimentarias</h2>
-            {alergias.length === 0 ? (
+            {alergias.positivas.length === 0 && alergias.negativas === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
               <ul className="flex flex-col gap-1.5 text-sm text-ink">
-                {alergias.map((a) => (
-                  <li key={a.etiqueta} className="flex items-center justify-between gap-2 border-b border-ink/10 py-1 last:border-0">
-                    <span>{a.etiqueta}</span>
-                    <span className="flex-none font-semibold tabular-nums text-ink/70">
-                      {a.cantidad} {a.cantidad === 1 ? "pareja" : "parejas"}
+                {alergias.positivas.map(({ inscrito, valor }) => (
+                  <li key={inscrito.id} className="flex items-center justify-between gap-2 border-b border-ink/10 py-1 last:border-0">
+                    <span>{valor}</span>
+                    <span className="flex-none text-xs text-ink/60">
+                      {apellido(inscrito.nombreMarido)} {apellido(inscrito.nombreEsposa)}
                     </span>
                   </li>
                 ))}
+                {alergias.negativas > 0 && (
+                  <li className="flex items-center justify-between gap-2 border-b border-ink/10 py-1 last:border-0">
+                    <span>No</span>
+                    <span className="flex-none font-semibold tabular-nums text-ink/70">
+                      {alergias.negativas} {alergias.negativas === 1 ? "pareja" : "parejas"}
+                    </span>
+                  </li>
+                )}
               </ul>
             )}
           </div>
@@ -591,13 +642,12 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
             <table className="w-full min-w-[1000px] text-left text-sm">
               <thead>
                 <tr className="border-b border-ink/15 text-xs text-ink/60 uppercase">
+                  <th className="px-3 py-3 font-semibold">Familia</th>
                   <th className="px-3 py-3 font-semibold">Esposa</th>
                   <th className="px-3 py-3 font-semibold">Marido</th>
                   <th className="px-3 py-3 font-semibold">Fecha</th>
                   <th className="px-3 py-3 font-semibold">Estado de pago</th>
                   <th className="px-3 py-3 font-semibold">Monto</th>
-                  <th className="px-3 py-3 font-semibold">Método</th>
-                  <th className="px-3 py-3 font-semibold">Notas</th>
                   <th className="px-3 py-3 font-semibold">Inscrito</th>
                   <th className="px-3 py-3 font-semibold" />
                 </tr>

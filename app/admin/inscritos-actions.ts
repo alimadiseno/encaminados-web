@@ -43,7 +43,7 @@ export async function actualizarInscrito(
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/inscritos");
+  revalidatePath("/admin");
   return {};
 }
 
@@ -86,6 +86,6 @@ export async function crearInscritoManual(
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/inscritos");
+  revalidatePath("/admin");
   return {};
 }

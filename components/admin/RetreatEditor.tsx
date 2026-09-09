@@ -176,13 +176,14 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
           </button>
         </aside>
 
-        {vista === "inscritos" && <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} />}
+        <div className="min-w-0 flex-1 rounded-2xl bg-almost-white p-6 sm:p-8">
+          {vista === "inscritos" && <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} />}
 
-        <form
-          id="formulario-retreat"
-          action={formAction}
-          className={vista === "inscritos" ? "hidden" : "flex min-w-0 flex-1 flex-col gap-10"}
-        >
+          <form
+            id="formulario-retreat"
+            action={formAction}
+            className={vista === "inscritos" ? "hidden" : "flex min-w-0 flex-1 flex-col gap-10"}
+          >
           {state.error && (
             <p className="rounded-xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-700">{state.error}</p>
           )}
@@ -501,7 +502,8 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
             </button>
             <p className="text-xs text-ink/50">Guarda todas las secciones, no solo la que estás viendo.</p>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

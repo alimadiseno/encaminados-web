@@ -11,6 +11,7 @@
   --color-block: #e3ebe0; /* surface/block */
   --color-card: #f9eee8; /* surface/card */
   --color-icon-bg: #ffc5a0; /* surface/icon */
+  --color-almost-white: #fdfcfa; /* bg/admin-content */
 
   --font-display: var(--font-display), "Iowan Old Style", serif;
   --font-body: var(--font-body), "Segoe UI", sans-serif;
