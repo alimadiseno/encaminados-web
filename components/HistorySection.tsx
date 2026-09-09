@@ -22,11 +22,6 @@ export default function HistorySection({ retreat }: { retreat: RetreatEvent }) {
               </p>
             ))}
           </Reveal>
-          <Reveal delay={160} className="w-full border-t border-ink/15 pt-4">
-            <p className="text-sm font-semibold text-ink">
-              Encaminados es una iniciativa de #familiaRC · Regnum Christi Chile.
-            </p>
-          </Reveal>
         </div>
 
         <Reveal delay={120} className="relative h-[280px] w-full flex-1 overflow-hidden rounded-tl-[180px] rounded-tr-[20px] rounded-br-[180px] rounded-bl-[20px] sm:h-[380px]">

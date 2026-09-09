@@ -7,6 +7,7 @@ import Logo from "./Logo";
 const NAV_LINKS = [
   { href: "#jornada", label: "Qué es" },
   { href: "#testimonios", label: "Testimonios" },
+  { href: "#historia", label: "Nuestra Historia" },
   { href: "#logistica", label: "Información Clave" },
   { href: "#preguntas", label: "Preguntas Frecuentes" },
 ];
