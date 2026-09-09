@@ -99,8 +99,8 @@ function apellido(nombreCompleto: string): string {
   return bloques.length >= 3 ? bloques[bloques.length - 2] : bloques[bloques.length - 1];
 }
 
-function nombreFamilia(inscrito: Inscrito): string {
-  return `Familia ${apellido(inscrito.nombreMarido)} ${apellido(inscrito.nombreEsposa)}`;
+function apellidosPareja(inscrito: Inscrito): string {
+  return `${apellido(inscrito.nombreMarido)} ${apellido(inscrito.nombreEsposa)}`;
 }
 
 function esRespuestaNegativa(valor: string): boolean {
@@ -141,6 +141,7 @@ function ContenidoDetalle({ inscrito }: { inscrito: Inscrito }) {
         .filter((entrada): entrada is [string, string] => Boolean(entrada[1] && entrada[1].trim()))
     : [];
   const entradas: [string, string][] = [
+    ["Inscrito el", formatearFecha(inscrito.creadoEn)],
     ...(inscrito.metodoPago ? [["Método de pago", inscrito.metodoPago] as [string, string]] : []),
     ...(inscrito.notas ? [["Notas", inscrito.notas] as [string, string]] : []),
     ...entradasDetalle,
@@ -177,7 +178,7 @@ function ContenidoDetalle({ inscrito }: { inscrito: Inscrito }) {
 function FilaDetalle({ inscrito }: { inscrito: Inscrito }) {
   return (
     <tr className="border-b border-ink/10 bg-cream/60">
-      <td colSpan={8} className="px-3 py-4">
+      <td colSpan={7} className="px-3 py-4">
         <ContenidoDetalle inscrito={inscrito} />
       </td>
     </tr>
@@ -242,7 +243,7 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
     return (
       <>
         <tr className="border-b border-ink/10 align-top">
-          <td className="px-3 py-3 font-semibold whitespace-nowrap">{nombreFamilia(inscrito)}</td>
+          <td className="px-3 py-3 font-semibold whitespace-nowrap">{apellidosPareja(inscrito)}</td>
           <td className="px-3 py-3">
             <Persona nombre={inscrito.nombreEsposa} telefono={inscrito.telefonoEsposa} email={inscrito.emailEsposa} />
           </td>
@@ -256,7 +257,6 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
             </span>
           </td>
           <td className="px-3 py-3">{inscrito.monto != null ? `$${inscrito.monto.toLocaleString("es-CL")}` : "—"}</td>
-          <td className="px-3 py-3 whitespace-nowrap text-ink/60">{formatearFecha(inscrito.creadoEn)}</td>
           <td className="px-3 py-3 whitespace-nowrap">
             <button type="button" onClick={() => setMostrarDetalle((v) => !v)} className="text-xs text-ink/60 underline underline-offset-2">
               {mostrarDetalle ? "Ocultar" : "Ver más"}
@@ -274,12 +274,12 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
   return (
     <tr className="border-b border-ink/10 bg-card">
       <td className="px-3 py-3 font-semibold" colSpan={2}>
-        {nombreFamilia(inscrito)}
+        {apellidosPareja(inscrito)}
         <span className="block text-xs font-normal text-ink/60">
           {inscrito.nombreEsposa} y {inscrito.nombreMarido}
         </span>
       </td>
-      <td className="px-3 py-3" colSpan={6}>
+      <td className="px-3 py-3" colSpan={5}>
         <form
           action={(formData) => {
             formAction(formData);
@@ -316,7 +316,7 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
     <div className="flex flex-col gap-4 rounded-2xl bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold text-terracotta">{nombreFamilia(inscrito)}</p>
+          <p className="text-xs font-semibold text-terracotta">{apellidosPareja(inscrito)}</p>
           <Persona nombre={inscrito.nombreEsposa} telefono={inscrito.telefonoEsposa} email={inscrito.emailEsposa} />
           <Persona nombre={inscrito.nombreMarido} telefono={inscrito.telefonoMarido} email={inscrito.emailMarido} />
         </div>
@@ -523,7 +523,7 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
             <p className="h3-section text-ink">{metricas.total}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <p className="text-xs text-ink/60">Pendientes</p>
+            <p className="text-xs text-ink/60">Pago pendiente</p>
             <p className="h3-section text-ink">{metricas.porEstado.pendiente}</p>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
@@ -648,7 +648,6 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
                   <th className="px-3 py-3 font-semibold">Fecha</th>
                   <th className="px-3 py-3 font-semibold">Estado de pago</th>
                   <th className="px-3 py-3 font-semibold">Monto</th>
-                  <th className="px-3 py-3 font-semibold">Inscrito</th>
                   <th className="px-3 py-3 font-semibold" />
                 </tr>
               </thead>

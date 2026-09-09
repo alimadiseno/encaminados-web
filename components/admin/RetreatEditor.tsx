@@ -154,11 +154,11 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
   const claseSeo = vista === "seo" ? "contents" : "hidden";
 
   return (
-    <div className="min-h-[100svh] bg-cream">
+    <div className="flex min-h-[100svh] flex-col bg-cream">
       <AdminHeader />
 
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:gap-8 sm:px-10">
-        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:overflow-visible">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-stretch">
+        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto px-6 py-6 sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:self-start sm:overflow-visible sm:px-10 sm:py-10">
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
           </button>
@@ -176,7 +176,7 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
           </button>
         </aside>
 
-        <div className="min-w-0 flex-1 rounded-2xl bg-almost-white p-6 sm:p-8">
+        <div className="min-w-0 flex-1 bg-almost-white px-6 py-10 sm:px-10">
           {vista === "inscritos" && <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} />}
 
           <form
