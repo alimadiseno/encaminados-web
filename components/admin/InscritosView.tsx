@@ -49,17 +49,30 @@ interface Conteo {
  * vegano") van a quedar en filas separadas, no hay forma de evitar eso sin
  * interpretar el texto.
  */
+function claveTexto(texto: string): string {
+  return texto.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 function agruparRespuestas(valores: (string | undefined)[]): Conteo[] {
   const mapa = new Map<string, Conteo>();
   for (const valor of valores) {
     const limpio = valor?.trim();
     if (!limpio) continue;
-    const clave = limpio.toLowerCase().replace(/\s+/g, " ");
+    const clave = claveTexto(limpio);
     const actual = mapa.get(clave);
     if (actual) actual.cantidad += 1;
     else mapa.set(clave, { etiqueta: limpio, cantidad: 1 });
   }
   return [...mapa.values()].sort((a, b) => b.cantidad - a.cantidad);
+}
+
+/** Igual que agruparRespuestas, pero pliega lo que sobre del límite en un último grupo "Otras respuestas" — para no terminar con más colores que la paleta categórica tiene slots. */
+function agruparConLimite(valores: (string | undefined)[], limite: number): Conteo[] {
+  const agrupado = agruparRespuestas(valores);
+  if (agrupado.length <= limite) return agrupado;
+  const visibles = agrupado.slice(0, limite - 1);
+  const resto = agrupado.slice(limite - 1).reduce((acc, c) => acc + c.cantidad, 0);
+  return [...visibles, { etiqueta: "Otras respuestas afirmativas", cantidad: resto }];
 }
 
 const CONECTORES_APELLIDO = new Set(["de", "del", "la", "los", "las"]);
@@ -106,6 +119,11 @@ function apellidosPareja(inscrito: Inscrito): string {
 function esRespuestaNegativa(valor: string): boolean {
   const limpio = valor.trim().toLowerCase();
   return limpio === "no" || limpio === "n/a" || limpio === "na" || limpio.startsWith("ningun");
+}
+
+/** Cualquier respuesta que empiece con "sí"/"si" ("Sí, del colegio X", "Si"), sin agarrar palabras como "sin". */
+function esRespuestaAfirmativa(valor: string): boolean {
+  return /^si\b/.test(normalizar(valor));
 }
 
 const DIACRITICOS = new RegExp("[\\u0300-\\u036f]", "g");
@@ -220,6 +238,86 @@ function BarraCategoria({ etiqueta, cantidad, maximo }: { etiqueta: string; cant
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-sage/50">
         <div className="h-full rounded-full bg-terracotta" style={{ width: `${porcentaje}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Paleta categórica validada (8 tonos, orden fijo — nunca se ciclan) del
+ * skill de dataviz: separación CVD y contraste ya verificados con
+ * scripts/validate_palette.js, así que los colores se toman tal cual, sin
+ * inventar tonos "de marca" a ojo.
+ */
+const COLORES_CATEGORICOS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
+/** Color de reserva si alguna vez aparece una etiqueta fuera del mapa fijo (no debería pasar en la práctica). */
+const COLOR_RESERVA = "#89878199";
+
+interface SegmentoColor extends Conteo {
+  color: string;
+}
+
+/**
+ * Asigna un color fijo por etiqueta a partir del orden de frecuencia sobre
+ * el set SIN filtrar — así "Sí, del colegio Cumbres" mantiene su color
+ * aunque el filtro de fecha cambie qué tan seguido aparece dentro del
+ * subconjunto visible ("el color sigue a la entidad, nunca a su ranking").
+ */
+function mapaDeColores(etiquetasBase: Conteo[]): Map<string, string> {
+  const mapa = new Map<string, string>();
+  etiquetasBase.forEach((c, i) => mapa.set(claveTexto(c.etiqueta), COLORES_CATEGORICOS[i % COLORES_CATEGORICOS.length]));
+  return mapa;
+}
+
+function conColor(segmentos: Conteo[], colores: Map<string, string>): SegmentoColor[] {
+  return segmentos.map((s) => ({ ...s, color: colores.get(claveTexto(s.etiqueta)) ?? COLOR_RESERVA }));
+}
+
+/**
+ * Barra apilada para agrupar todas las respuestas afirmativas ("Sí, del
+ * colegio X", "Sí, del colegio Y") en una sola barra, un color por
+ * sub-respuesta. La leyenda de abajo es la vía "siempre visible" a la
+ * identidad de cada color (nunca solo color) y el `title` da el detalle
+ * puntual al pasar el mouse.
+ */
+function BarraApilada({
+  etiqueta,
+  segmentos,
+  total,
+  maximo,
+}: {
+  etiqueta: string;
+  segmentos: SegmentoColor[];
+  total: number;
+  maximo: number;
+}) {
+  const porcentaje = maximo > 0 ? (total / maximo) * 100 : 0;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3 text-xs text-ink">
+        <span>{etiqueta}</span>
+        <span className="flex-none font-semibold tabular-nums">{total}</span>
+      </div>
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-sage/50">
+        <div className="flex h-full gap-[2px] overflow-hidden rounded-full" style={{ width: `${porcentaje}%` }}>
+          {segmentos.map((s) => (
+            <div
+              key={s.etiqueta}
+              title={`${s.etiqueta}: ${s.cantidad}`}
+              tabIndex={0}
+              className="h-full outline-none transition-opacity hover:opacity-80 focus-visible:opacity-80"
+              style={{ flexBasis: `${(s.cantidad / total) * 100}%`, backgroundColor: s.color }}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink/70">
+        {segmentos.map((s) => (
+          <span key={s.etiqueta} className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 flex-none rounded-full" style={{ backgroundColor: s.color }} />
+            {s.etiqueta} <span className="font-semibold text-ink">{s.cantidad}</span>
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -612,8 +710,29 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
     () => (filtroFechaColegio === "todas" ? inscritos : inscritos.filter((i) => coincideFecha(i.fechaElegida, filtroFechaColegio))),
     [inscritos, filtroFechaColegio],
   );
-  const colegioRC = useMemo(() => agruparRespuestas(inscritosColegio.map((i) => i.detalleExtra?.colegioRC)), [inscritosColegio]);
-  const maxColegioRC = Math.max(1, ...colegioRC.map((c) => c.cantidad));
+  const coloresColegio = useMemo(() => {
+    const afirmativasTodas = inscritos
+      .map((i) => i.detalleExtra?.colegioRC?.trim())
+      .filter((v): v is string => Boolean(v))
+      .filter(esRespuestaAfirmativa);
+    return mapaDeColores(agruparConLimite(afirmativasTodas, COLORES_CATEGORICOS.length));
+  }, [inscritos]);
+
+  const colegio = useMemo(() => {
+    const respuestas = inscritosColegio
+      .map((i) => i.detalleExtra?.colegioRC?.trim())
+      .filter((v): v is string => Boolean(v));
+    const afirmativas = respuestas.filter(esRespuestaAfirmativa);
+    const negativas = respuestas.filter(esRespuestaNegativa).length;
+    const otras = respuestas.filter((v) => !esRespuestaAfirmativa(v) && !esRespuestaNegativa(v));
+    return {
+      si: conColor(agruparConLimite(afirmativas, COLORES_CATEGORICOS.length), coloresColegio),
+      siTotal: afirmativas.length,
+      no: negativas,
+      otras: agruparRespuestas(otras),
+    };
+  }, [inscritosColegio, coloresColegio]);
+  const maxColegio = Math.max(1, colegio.siTotal, colegio.no, ...colegio.otras.map((c) => c.cantidad));
 
   const inscritosAlergias = useMemo(
     () => (filtroFechaAlergias === "todas" ? inscritos : inscritos.filter((i) => coincideFecha(i.fechaElegida, filtroFechaAlergias))),
@@ -682,12 +801,14 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
               Apoderados/colaboradores de un colegio Red RC
             </h2>
             <BotonesFiltroFecha fechas={fechas} valor={filtroFechaColegio} onChange={setFiltroFechaColegio} />
-            {colegioRC.length === 0 ? (
+            {colegio.siTotal === 0 && colegio.no === 0 && colegio.otras.length === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
               <div className="flex flex-col gap-3">
-                {colegioRC.map((c) => (
-                  <BarraCategoria key={c.etiqueta} etiqueta={c.etiqueta} cantidad={c.cantidad} maximo={maxColegioRC} />
+                {colegio.siTotal > 0 && <BarraApilada etiqueta="Sí" segmentos={colegio.si} total={colegio.siTotal} maximo={maxColegio} />}
+                {colegio.no > 0 && <BarraCategoria etiqueta="No" cantidad={colegio.no} maximo={maxColegio} />}
+                {colegio.otras.map((c) => (
+                  <BarraCategoria key={c.etiqueta} etiqueta={c.etiqueta} cantidad={c.cantidad} maximo={maxColegio} />
                 ))}
               </div>
             )}
