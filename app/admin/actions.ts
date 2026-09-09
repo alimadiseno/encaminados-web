@@ -20,8 +20,6 @@ export interface LoginState {
   error?: string;
 }
 
-const RUTAS_ADMIN_VALIDAS = ["/admin", "/admin/inscritos"];
-
 export async function loginAdmin(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const password = String(formData.get("password") ?? "");
   const ok = await iniciarSesion(password);
@@ -30,11 +28,8 @@ export async function loginAdmin(_prevState: LoginState, formData: FormData): Pr
     return { error: "Clave incorrecta. Intenta de nuevo." };
   }
 
-  const redirectTo = String(formData.get("redirectTo") ?? "/admin");
-  const destino = RUTAS_ADMIN_VALIDAS.includes(redirectTo) ? redirectTo : "/admin";
-
-  revalidatePath(destino);
-  redirect(destino);
+  revalidatePath("/admin");
+  redirect("/admin");
 }
 
 export async function logoutAdmin() {

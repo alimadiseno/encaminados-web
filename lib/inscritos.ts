@@ -2,6 +2,18 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 
 export type EstadoPago = "pendiente" | "parcial" | "pagado";
 
+/** Preguntas del Form que el cliente quiere conservar pero no son datos clave de contacto/pago. */
+export interface DetalleExtra {
+  fechaMatrimonio?: string;
+  colegioRC?: string;
+  alergias?: string;
+  motivacion?: string;
+  expectativas?: string;
+  gruposEncuentro?: string;
+  cantidadHijos?: string;
+  comentarios?: string;
+}
+
 export interface Inscrito {
   id: string;
   fechaElegida: string;
@@ -15,6 +27,8 @@ export interface Inscrito {
   monto: number | null;
   metodoPago: string | null;
   notas: string | null;
+  comprobanteUrl: string | null;
+  detalleExtra: DetalleExtra | null;
   creadoEn: string;
 }
 
@@ -31,6 +45,8 @@ interface FilaInscrito {
   monto: number | null;
   metodo_pago: string | null;
   notas: string | null;
+  comprobante_url: string | null;
+  detalle_extra: DetalleExtra | null;
   creado_en: string;
 }
 
@@ -41,7 +57,7 @@ export async function getInscritos(retreatId: string): Promise<Inscrito[]> {
   const { data, error } = await supabase
     .from("inscritos")
     .select(
-      "id, fecha_elegida, nombre_esposa, telefono_esposa, email_esposa, nombre_marido, telefono_marido, email_marido, estado_pago, monto, metodo_pago, notas, creado_en",
+      "id, fecha_elegida, nombre_esposa, telefono_esposa, email_esposa, nombre_marido, telefono_marido, email_marido, estado_pago, monto, metodo_pago, notas, comprobante_url, detalle_extra, creado_en",
     )
     .eq("retreat_id", retreatId)
     .order("creado_en", { ascending: false });
@@ -64,6 +80,8 @@ export async function getInscritos(retreatId: string): Promise<Inscrito[]> {
     monto: f.monto,
     metodoPago: f.metodo_pago,
     notas: f.notas,
+    comprobanteUrl: f.comprobante_url,
+    detalleExtra: f.detalle_extra,
     creadoEn: f.creado_en,
   }));
 }

@@ -22,6 +22,8 @@ import {
 } from "@/app/admin/tipos";
 import { CampoTexto, CampoTextarea, CampoCheckbox, CampoSelect, CampoArchivo } from "./Campo";
 import { ListaEditable } from "./ListaEditable";
+import InscritosView from "./InscritosView";
+import type { Inscrito } from "@/lib/inscritos";
 
 function idCliente(): string {
   return crypto.randomUUID();
@@ -90,7 +92,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
   };
 }
 
-type Vista = "contenido" | "general" | "documentos" | "seo";
+type Vista = "contenido" | "general" | "documentos" | "inscritos" | "seo";
 type SeccionContenido =
   | "hero"
   | "ideas"
@@ -131,7 +133,7 @@ function claseTabSeccion(activo: boolean): string {
 
 const estadoInicialGuardado: GuardarState = {};
 
-export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
+export default function RetreatEditor({ retreat, inscritos }: { retreat: RetreatEvent; inscritos: Inscrito[] }) {
   const [datos, setDatos] = useState<DatosFormularioAdmin>(() => aEditable(retreat));
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
   const [vista, setVista] = useState<Vista>("contenido");
@@ -153,9 +155,9 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
 
   return (
     <div className="min-h-[100svh] bg-cream">
-      <AdminHeader seccionActiva="contenido" />
+      <AdminHeader />
 
-      <div className="mx-auto flex max-w-[1100px] flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:gap-8 sm:px-10">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-6 py-10 sm:flex-row sm:items-start sm:gap-8 sm:px-10">
         <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto sm:sticky sm:top-24 sm:w-48 sm:flex-col sm:overflow-visible">
           <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
             General
@@ -166,12 +168,21 @@ export default function RetreatEditor({ retreat }: { retreat: RetreatEvent }) {
           <button type="button" onClick={() => setVista("documentos")} className={claseNavPrincipal(vista === "documentos")}>
             Documentos sitio privado
           </button>
+          <button type="button" onClick={() => setVista("inscritos")} className={claseNavPrincipal(vista === "inscritos")}>
+            Inscritos
+          </button>
           <button type="button" onClick={() => setVista("seo")} className={claseNavPrincipal(vista === "seo")}>
             SEO
           </button>
         </aside>
 
-        <form id="formulario-retreat" action={formAction} className="flex min-w-0 flex-1 flex-col gap-10">
+        {vista === "inscritos" && <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} />}
+
+        <form
+          id="formulario-retreat"
+          action={formAction}
+          className={vista === "inscritos" ? "hidden" : "flex min-w-0 flex-1 flex-col gap-10"}
+        >
           {state.error && (
             <p className="rounded-xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-700">{state.error}</p>
           )}

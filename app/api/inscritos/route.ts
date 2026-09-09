@@ -32,6 +32,9 @@ export async function POST(request: Request) {
   const emailMarido = texto(body.emailMarido);
   const telefonoMarido = texto(body.telefonoMarido);
   const fechaElegida = texto(body.fechaElegida);
+  const comprobanteUrl = texto(body.comprobanteUrl);
+  const fechaInscripcion = texto(body.fechaInscripcion);
+  const detalleExtra = body.detalleExtra && typeof body.detalleExtra === "object" ? body.detalleExtra : null;
 
   if (!nombreEsposa || !emailEsposa || !nombreMarido || !emailMarido || !fechaElegida) {
     return NextResponse.json(
@@ -55,9 +58,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se encontró el retiro destacado." }, { status: 500 });
   }
 
-  // upsert (no insert): si el script de Apps Script se corre dos veces sobre la
-  // misma respuesta (ej. reintentando la carga inicial), la fila ya existente
-  // — con cualquier estado de pago que Aline ya haya marcado a mano — no se pisa.
+  // upsert (no insert): el script de Apps Script puede correr más de una vez sobre
+  // la misma respuesta (ej. reintentando la carga inicial) sin duplicar la fila.
+  // A propósito NO se incluyen estado_pago/monto/metodo_pago/notas acá — son
+  // campos que solo edita Aline a mano en el panel, así que si la fila ya existe
+  // el upsert los deja intactos (no aparecen en el UPDATE); si es una fila nueva,
+  // toman el valor por defecto de la columna ('pendiente' / null).
   const { error: errorInsertar } = await supabase.from("inscritos").upsert(
     {
       retreat_id: retreat.id,
@@ -68,9 +74,11 @@ export async function POST(request: Request) {
       email_marido: emailMarido,
       telefono_marido: telefonoMarido || null,
       fecha_elegida: fechaElegida,
-      estado_pago: "pendiente",
+      comprobante_url: comprobanteUrl || null,
+      detalle_extra: detalleExtra,
+      ...(fechaInscripcion ? { creado_en: fechaInscripcion } : {}),
     },
-    { onConflict: "retreat_id,email_esposa,email_marido", ignoreDuplicates: true },
+    { onConflict: "retreat_id,email_esposa,email_marido" },
   );
 
   if (errorInsertar) {

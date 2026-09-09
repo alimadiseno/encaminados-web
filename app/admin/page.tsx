@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { haySesionValida } from "@/lib/admin-auth";
 import { getRetreatBySlug, RETIRO_DESTACADO } from "@/data/retreats";
+import { getInscritos } from "@/lib/inscritos";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
 import RetreatEditor from "@/components/admin/RetreatEditor";
 
@@ -26,5 +27,7 @@ export default async function AdminPage() {
     );
   }
 
-  return <RetreatEditor retreat={retreat} />;
+  const inscritos = await getInscritos(retreat.id);
+
+  return <RetreatEditor retreat={retreat} inscritos={inscritos} />;
 }
