@@ -108,6 +108,108 @@ function esRespuestaNegativa(valor: string): boolean {
   return limpio === "no" || limpio === "n/a" || limpio === "na" || limpio.startsWith("ningun");
 }
 
+const DIACRITICOS = new RegExp("[\\u0300-\\u036f]", "g");
+
+function normalizar(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(DIACRITICOS, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+/**
+ * El texto de "fecha elegida" que llega por el Google Form se escribe a mano
+ * en la hoja de cálculo y puede no calzar carácter a carácter con el label
+ * configurado en el panel (ej. con año agregado, o con "Retiro del..."
+ * delante) — por eso la comparación es por inclusión en ambos sentidos, no
+ * por igualdad estricta.
+ */
+function coincideFecha(fechaElegida: string, fecha: string): boolean {
+  const a = normalizar(fechaElegida);
+  const b = normalizar(fecha);
+  return a === b || a.includes(b) || b.includes(a);
+}
+
+/** De "2 al 4 de octubre" saca "2-4 oct." para usar en botones de filtro compactos. */
+function etiquetaCorta(label: string): string {
+  const match = label.match(/^(\d+)\s+al\s+(\d+)\s+de\s+(\p{L}+)/u);
+  if (!match) return label;
+  const [, d1, d2, mes] = match;
+  return `${d1}-${d2} ${mes.slice(0, 3).toLowerCase()}.`;
+}
+
+interface Metricas {
+  total: number;
+  porEstado: Record<EstadoPago, number>;
+  recaudado: number;
+}
+
+function calcularMetricas(lista: Inscrito[]): Metricas {
+  const porEstado: Record<EstadoPago, number> = { pendiente: 0, parcial: 0, pagado: 0 };
+  let recaudado = 0;
+  for (const i of lista) {
+    porEstado[i.estadoPago] += 1;
+    recaudado += i.monto ?? 0;
+  }
+  return { total: lista.length, porEstado, recaudado };
+}
+
+type ClaveMetrica = "total" | EstadoPago | "recaudado";
+
+const METRICAS_CONFIG: { clave: ClaveMetrica; etiqueta: string; icono: string }[] = [
+  { clave: "total", etiqueta: "Total parejas inscritas", icono: "/icons/partner.svg" },
+  { clave: "pendiente", etiqueta: "Pago pendiente", icono: "/icons/payments.svg" },
+  { clave: "parcial", etiqueta: "Pago parcial", icono: "/icons/payments.svg" },
+  { clave: "pagado", etiqueta: "Pagado completo", icono: "/icons/payments.svg" },
+  { clave: "recaudado", etiqueta: "Recaudado", icono: "/icons/account-balance.svg" },
+];
+
+function valorMetrica(metricas: Metricas, clave: ClaveMetrica): string {
+  if (clave === "total") return String(metricas.total);
+  if (clave === "recaudado") return `$${metricas.recaudado.toLocaleString("es-CL")}`;
+  return String(metricas.porEstado[clave]);
+}
+
+/** Grilla de las 5 métricas clave. `grande` marca la fila de totales generales, más destacada que las filas por fecha. */
+function GrillaMetricas({ metricas, grande }: { metricas: Metricas; grande?: boolean }) {
+  const numeroClase = grande ? "font-display text-4xl text-ink" : "font-display text-2xl text-ink";
+  const tarjetaClase = grande ? "bg-card p-4" : "bg-almost-white p-3";
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {METRICAS_CONFIG.map(({ clave, etiqueta, icono }) => (
+        <div key={clave} className={`flex flex-col gap-1 rounded-2xl ${tarjetaClase}`}>
+          <img src={icono} alt="" className="mb-1 size-5" />
+          <p className="text-xs text-ink/60">{etiqueta}</p>
+          <p className={numeroClase}>{valorMetrica(metricas, clave)}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function claseBotonFiltro(activo: boolean): string {
+  return `rounded-full px-3 py-1 text-xs font-bold tracking-[0.04em] uppercase transition-colors ${
+    activo ? "bg-terracotta text-peach" : "bg-block text-ink"
+  }`;
+}
+
+function BotonesFiltroFecha({ fechas, valor, onChange }: { fechas: string[]; valor: string; onChange: (valor: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={() => onChange("todas")} className={claseBotonFiltro(valor === "todas")}>
+        Todos
+      </button>
+      {fechas.map((f) => (
+        <button key={f} type="button" onClick={() => onChange(f)} className={claseBotonFiltro(valor === f)}>
+          {etiquetaCorta(f)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function BarraCategoria({ etiqueta, cantidad, maximo }: { etiqueta: string; cantidad: number; maximo: number }) {
   const porcentaje = maximo > 0 ? (cantidad / maximo) * 100 : 0;
   return (
@@ -482,67 +584,65 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
   const [vista, setVista] = useState<"tabla" | "tarjetas">("tabla");
   const [filtroEstado, setFiltroEstado] = useState<EstadoPago | "todos">("todos");
   const [filtroFecha, setFiltroFecha] = useState<string>("todas");
+  const [filtroFechaAlergias, setFiltroFechaAlergias] = useState<string>("todas");
+  const [filtroFechaColegio, setFiltroFechaColegio] = useState<string>("todas");
 
   const filtrados = useMemo(
     () =>
       inscritos.filter(
-        (i) => (filtroEstado === "todos" || i.estadoPago === filtroEstado) && (filtroFecha === "todas" || i.fechaElegida === filtroFecha),
+        (i) =>
+          (filtroEstado === "todos" || i.estadoPago === filtroEstado) &&
+          (filtroFecha === "todas" || coincideFecha(i.fechaElegida, filtroFecha)),
       ),
     [inscritos, filtroEstado, filtroFecha],
   );
 
-  const metricas = useMemo(() => {
-    const porEstado: Record<EstadoPago, number> = { pendiente: 0, parcial: 0, pagado: 0 };
-    let recaudado = 0;
-    for (const i of inscritos) {
-      porEstado[i.estadoPago] += 1;
-      recaudado += i.monto ?? 0;
-    }
-    return { total: inscritos.length, porEstado, recaudado };
-  }, [inscritos]);
+  const metricas = useMemo(() => calcularMetricas(inscritos), [inscritos]);
 
-  const colegioRC = useMemo(() => agruparRespuestas(inscritos.map((i) => i.detalleExtra?.colegioRC)), [inscritos]);
+  const metricasPorFecha = useMemo(
+    () =>
+      fechas.map((fecha) => ({
+        fecha,
+        metricas: calcularMetricas(inscritos.filter((i) => coincideFecha(i.fechaElegida, fecha))),
+      })),
+    [inscritos, fechas],
+  );
+
+  const inscritosColegio = useMemo(
+    () => (filtroFechaColegio === "todas" ? inscritos : inscritos.filter((i) => coincideFecha(i.fechaElegida, filtroFechaColegio))),
+    [inscritos, filtroFechaColegio],
+  );
+  const colegioRC = useMemo(() => agruparRespuestas(inscritosColegio.map((i) => i.detalleExtra?.colegioRC)), [inscritosColegio]);
   const maxColegioRC = Math.max(1, ...colegioRC.map((c) => c.cantidad));
 
+  const inscritosAlergias = useMemo(
+    () => (filtroFechaAlergias === "todas" ? inscritos : inscritos.filter((i) => coincideFecha(i.fechaElegida, filtroFechaAlergias))),
+    [inscritos, filtroFechaAlergias],
+  );
   const alergias = useMemo(() => {
-    const conRespuesta = inscritos
+    const conRespuesta = inscritosAlergias
       .map((i) => ({ inscrito: i, valor: i.detalleExtra?.alergias?.trim() }))
       .filter((r): r is { inscrito: Inscrito; valor: string } => Boolean(r.valor));
     const positivas = conRespuesta.filter((r) => !esRespuestaNegativa(r.valor));
     const negativas = conRespuesta.filter((r) => esRespuestaNegativa(r.valor)).length;
     return { positivas, negativas };
-  }, [inscritos]);
+  }, [inscritosAlergias]);
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8">
       <h1 className="h2-section text-ink">Inscritos</h1>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <img src="/icons/partner.svg" alt="" className="mb-1 size-5" />
-            <p className="text-xs text-ink/60">Total parejas inscritas</p>
-            <p className="h3-section text-ink">{metricas.total}</p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-bold tracking-[0.06em] text-ink/50 uppercase">Totales generales</p>
+            <GrillaMetricas metricas={metricas} grande />
           </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
-            <p className="text-xs text-ink/60">Pago pendiente</p>
-            <p className="h3-section text-ink">{metricas.porEstado.pendiente}</p>
-          </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
-            <p className="text-xs text-ink/60">Pago parcial</p>
-            <p className="h3-section text-ink">{metricas.porEstado.parcial}</p>
-          </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <img src="/icons/payments.svg" alt="" className="mb-1 size-5" />
-            <p className="text-xs text-ink/60">Pagado completo</p>
-            <p className="h3-section text-ink">{metricas.porEstado.pagado}</p>
-          </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-card p-4">
-            <img src="/icons/account-balance.svg" alt="" className="mb-1 size-5" />
-            <p className="text-xs text-ink/60">Recaudado</p>
-            <p className="h3-section text-ink">${metricas.recaudado.toLocaleString("es-CL")}</p>
-          </div>
+          {metricasPorFecha.map(({ fecha, metricas: metricasFecha }) => (
+            <div key={fecha} className="flex flex-col gap-3 rounded-2xl border-2 border-dashed border-terracotta/30 p-4">
+              <p className="text-xs font-bold tracking-[0.06em] text-terracotta uppercase">{fecha}</p>
+              <GrillaMetricas metricas={metricasFecha} />
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -551,6 +651,7 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
               <img src="/icons/grocery.svg" alt="" className="size-5" />
               Alergias / restricciones alimentarias
             </h2>
+            <BotonesFiltroFecha fechas={fechas} valor={filtroFechaAlergias} onChange={setFiltroFechaAlergias} />
             {alergias.positivas.length === 0 && alergias.negativas === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
@@ -580,6 +681,7 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
               <img src="/icons/network-node.svg" alt="" className="size-5" />
               Apoderados/colaboradores de un colegio Red RC
             </h2>
+            <BotonesFiltroFecha fechas={fechas} valor={filtroFechaColegio} onChange={setFiltroFechaColegio} />
             {colegioRC.length === 0 ? (
               <p className="text-sm text-ink/50">Sin respuestas todavía.</p>
             ) : (
