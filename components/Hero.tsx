@@ -16,6 +16,7 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
         sizes="100vw"
         className="object-cover"
       />
+      {/* Color a propósito fuera de la paleta (no bg-ink/N): ajustado a mano para esta foto puntual del hero, no es un token del sistema. */}
       <div className="absolute inset-0 bg-[rgba(77,90,110,0.35)]" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center gap-10 px-6 sm:px-10 lg:flex-row lg:items-center lg:justify-center lg:gap-10 lg:px-24">
@@ -50,7 +51,7 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
               href={retreat.inscripcionUrl}
               target="_blank"
               rel="noopener"
-              className="flex w-full items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+              className="btn-primary w-full py-[18px] no-underline"
             >
               Inscribirme ahora
             </a>

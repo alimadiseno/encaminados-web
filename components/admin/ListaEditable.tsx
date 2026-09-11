@@ -37,7 +37,7 @@ export function ListaEditable<T extends ConId>({
     <button
       type="button"
       onClick={() => onChange([...items, nuevoItem()])}
-      className="self-start rounded-full border-2 border-terracotta px-4 py-1.5 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
+      className="btn-outline self-start py-1.5"
     >
       {etiquetaAgregar}
     </button>

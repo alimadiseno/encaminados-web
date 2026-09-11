@@ -37,7 +37,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={pending}
-            className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-terracotta px-8 py-3.5 text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="btn-primary min-h-[48px] w-full py-3.5 no-underline"
           >
             {pending ? "Entrando…" : "Entrar"}
           </button>

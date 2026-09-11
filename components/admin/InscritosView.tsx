@@ -671,7 +671,7 @@ function BotonExportacion({ retreatId, fechas }: { retreatId: string; fechas: st
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="self-start rounded-full border-2 border-terracotta px-4 py-2 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
+        className="btn-outline self-start py-2"
       >
         Exportar datos
       </button>
@@ -714,7 +714,7 @@ function FormularioNuevoInscrito({ fechas }: { fechas: string[] }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="self-start rounded-full border-2 border-terracotta px-4 py-2 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
+        className="btn-outline self-start py-2"
       >
         + Agregar inscrito manual
       </button>

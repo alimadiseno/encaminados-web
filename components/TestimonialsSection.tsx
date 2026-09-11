@@ -77,7 +77,7 @@ export default function TestimonialsSection({ retreat }: { retreat: RetreatEvent
             type="button"
             aria-label="Ver testimonios anteriores"
             onClick={() => desplazar(-1)}
-            className="absolute top-1/2 left-4 hidden -translate-y-1/2 items-center justify-center rounded-full bg-cream/90 p-3 text-ink shadow-[0_2px_10px_rgba(0,0,0,.12)] transition-colors hover:bg-cream lg:flex"
+            className="carousel-nav absolute top-1/2 left-4 hidden -translate-y-1/2 items-center justify-center bg-cream/90 hover:bg-cream lg:flex"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" stroke="currentColor" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 6l-6 6 6 6" />
@@ -90,7 +90,7 @@ export default function TestimonialsSection({ retreat }: { retreat: RetreatEvent
             type="button"
             aria-label="Ver más testimonios"
             onClick={() => desplazar(1)}
-            className="absolute top-1/2 right-4 hidden -translate-y-1/2 items-center justify-center rounded-full bg-cream/90 p-3 text-ink shadow-[0_2px_10px_rgba(0,0,0,.12)] transition-colors hover:bg-cream lg:flex"
+            className="carousel-nav absolute top-1/2 right-4 hidden -translate-y-1/2 items-center justify-center bg-cream/90 hover:bg-cream lg:flex"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" stroke="currentColor" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
@@ -104,7 +104,7 @@ export default function TestimonialsSection({ retreat }: { retreat: RetreatEvent
           href={retreat.inscripcionUrl}
           target="_blank"
           rel="noopener"
-          className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+          className="btn-primary min-h-[48px] py-[18px] no-underline"
         >
           Inscribirme ahora
         </a>

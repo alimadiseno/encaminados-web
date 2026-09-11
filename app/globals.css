@@ -78,6 +78,78 @@
   transition-duration: 150ms;
 }
 
+/* ============================================================
+   Botón primario — CTA de inscripción y envío de formularios
+   (Hero, Header, LogisticsSection, TestimonialsSection,
+   ClosingSection, AdminLoginForm, guias/LoginForm, RetreatEditor).
+   El tamaño vertical (py, min-h), el layout (w-full, no-underline)
+   y sombras puntuales se agregan en cada uso porque varían según
+   el contexto — esto solo fija la forma y el color, que no deben.
+   ============================================================ */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-terracotta);
+  padding-inline: 2rem; /* 32px */
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-peach);
+  text-transform: uppercase;
+  transition-property: opacity;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: 150ms;
+  &:hover {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+/* ============================================================
+   Botón secundario (outline) — acciones de edición en el panel
+   admin: agregar fila, elegir foto, exportar (Campo, ListaEditable,
+   InscritosView).
+   ============================================================ */
+@utility btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border-width: 2px;
+  border-color: var(--color-terracotta);
+  padding-inline: 1rem; /* 16px */
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-terracotta);
+  text-transform: uppercase;
+  transition-property: color, background-color;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: 150ms;
+  &:hover {
+    background-color: var(--color-terracotta);
+    color: var(--color-peach);
+  }
+}
+
+/* ============================================================
+   Flecha de navegación de carrusel — testimonios en video y
+   franja de fotos (TestimonialsSection, PhotoStrip).
+   ============================================================ */
+@utility carousel-nav {
+  border-radius: 9999px;
+  padding: 0.75rem;
+  color: var(--color-ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition-property: color, background-color;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: 150ms;
+}
+
 html {
   scroll-behavior: smooth;
 }

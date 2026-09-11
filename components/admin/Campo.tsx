@@ -169,7 +169,7 @@ export function CampoArchivo({
             Sin foto
           </div>
         )}
-        <label className="inline-flex min-h-[40px] flex-none cursor-pointer items-center justify-center rounded-full border-2 border-terracotta px-4 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach">
+        <label className="btn-outline min-h-[40px] flex-none cursor-pointer">
           Elegir foto
           <input type="file" name={name} accept="image/*" onChange={alElegirArchivo} className="sr-only" />
         </label>

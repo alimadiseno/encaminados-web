@@ -47,7 +47,7 @@ export default function LogisticsSection({ retreat }: { retreat: RetreatEvent })
               href={retreat.inscripcionUrl}
               target="_blank"
               rel="noopener"
-              className="flex w-full items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+              className="btn-primary w-full py-[18px] no-underline"
             >
               Inscribirme ahora
             </a>

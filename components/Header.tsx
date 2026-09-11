@@ -61,7 +61,7 @@ export default function Header({ retreat }: { retreat: RetreatEvent }) {
           href={retreat.inscripcionUrl}
           target="_blank"
           rel="noopener"
-          className="hidden rounded-full bg-terracotta px-8 py-3 text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90 lg:inline-flex"
+          className="btn-primary hidden py-3 no-underline lg:inline-flex"
         >
           Inscribirme
         </a>
@@ -99,7 +99,7 @@ export default function Header({ retreat }: { retreat: RetreatEvent }) {
                 href={retreat.inscripcionUrl}
                 target="_blank"
                 rel="noopener"
-                className="inline-flex w-full items-center justify-center rounded-full bg-terracotta px-8 py-3 text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline"
+                className="btn-primary w-full py-3 no-underline"
               >
                 Inscribirme
               </a>

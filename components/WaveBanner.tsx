@@ -41,7 +41,7 @@ export default function WaveBanner({ frase, velocidadSegundos }: { frase: string
       <use href="#wave-banner-curva" stroke="var(--color-icon-bg)" strokeWidth={60} strokeLinecap="square" strokeLinejoin="round" fill="none" />
 
       <text
-        fill="#CD5F37"
+        fill="var(--color-terracotta)"
         fontFamily="var(--font-body)"
         fontWeight={500}
         fontSize={32}

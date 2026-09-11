@@ -34,7 +34,7 @@ export default function DocumentosList({ driveUrl }: { driveUrl?: string }) {
         </div>
 
         {embedUrl ? (
-          <div className="overflow-hidden rounded-2xl border-2 border-terracotta bg-white">
+          <div className="overflow-hidden rounded-2xl border-2 border-terracotta bg-cream">
             <iframe src={embedUrl} title="Documentos del retiro" className="h-[70vh] min-h-[420px] w-full border-0" />
           </div>
         ) : (

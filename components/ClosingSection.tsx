@@ -34,7 +34,7 @@ export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
             href={retreat.inscripcionUrl}
             target="_blank"
             rel="noopener"
-            className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+            className="btn-primary min-h-[52px] py-[18px] no-underline"
           >
             Inscribirme ahora
           </a>

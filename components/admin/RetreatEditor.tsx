@@ -563,7 +563,7 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
             <button
               type="submit"
               disabled={pending}
-              className="flex min-h-[52px] items-center justify-center rounded-full bg-terracotta px-8 py-3.5 text-sm font-bold tracking-[0.14em] text-peach uppercase shadow-[0_4px_16px_rgba(21,16,14,.18)] transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="btn-primary min-h-[52px] py-3.5 shadow-[0_4px_16px_rgba(21,16,14,.18)]"
             >
               {pending ? "Guardando…" : "Guardar cambios"}
             </button>
