@@ -102,7 +102,7 @@ export default function PhotoStrip({ retreat }: { retreat: RetreatEvent }) {
     <div className="relative">
       <div
         ref={scrollRef}
-        className="sin-scrollbar flex h-[180px] items-end gap-3 overflow-x-auto px-6 pb-0 sm:h-[220px] sm:px-10 lg:h-[280px] lg:px-24"
+        className="sin-scrollbar flex h-[180px] items-end gap-3 overflow-x-auto overflow-y-hidden px-6 pb-0 sm:h-[220px] sm:px-10 lg:h-[280px] lg:px-24"
         style={{
           backgroundImage:
             "linear-gradient(180deg, var(--color-cream) 0%, var(--color-cream) 49.9%, var(--color-lavender) 50%, var(--color-lavender) 100%)",
