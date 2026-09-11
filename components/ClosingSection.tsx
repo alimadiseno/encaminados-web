@@ -24,7 +24,7 @@ export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
           </Reveal>
           <Reveal delay={80}>
             <p className="h3-section text-peach italic">
-              Tres días para los dos. El resto puede esperar.
+              Un fin de semana para los dos. El resto puede esperar.
             </p>
           </Reveal>
         </div>
