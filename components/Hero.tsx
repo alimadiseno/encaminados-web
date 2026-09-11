@@ -6,7 +6,7 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
   return (
     <section
       id="top"
-      className="relative flex min-h-[600px] flex-col items-center justify-center overflow-hidden pt-28 pb-16 lg:min-h-[750px] lg:pb-10"
+      className="sticky top-0 z-0 flex min-h-[600px] flex-col items-center justify-center overflow-hidden pt-28 pb-16 lg:min-h-[750px] lg:pb-10"
     >
       <Image
         src={retreat.heroImagenUrl}
@@ -38,11 +38,11 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
               <p className="w-full text-center font-body text-base font-semibold text-terracotta">
                 PRÓXIMAS FECHAS {retreat.fechas[0]?.start.slice(0, 4)}
               </p>
-              {retreat.fechas.map((f) => (
-                <div key={f.label} className="flex w-full items-center gap-3">
+              {retreat.fechas.map((f, i) => (
+                <Reveal key={f.label} delay={260 + i * 70} className="flex w-full items-center gap-3">
                   <img src="/icons/calendar.svg" alt="" className="size-4 flex-none" />
                   <p className="h3-section flex-1 text-ink">{f.label}</p>
-                </div>
+                </Reveal>
               ))}
               <p className="w-full text-sm text-ink">{retreat.lugar}</p>
             </div>
@@ -57,12 +57,6 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
           </div>
         </Reveal>
       </div>
-
-      <img
-        src="/icons/hero-wave.svg"
-        alt=""
-        className="absolute inset-x-0 bottom-0 h-[70px] w-full"
-      />
     </section>
   );
 }

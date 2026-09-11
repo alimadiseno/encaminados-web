@@ -1,15 +1,8 @@
 import Image from "next/image";
-import type { Guia, RetreatEvent } from "@/types/retreat";
+import type { RetreatEvent } from "@/types/retreat";
 import Reveal from "./Reveal";
 
-const FORMA_FOTO: Record<Guia["fotoForma"], string> = {
-  arco: "rounded-t-[100px] rounded-b-2xl",
-  circulo: "rounded-full",
-};
-
 export default function GuidesSection({ retreat }: { retreat: RetreatEvent }) {
-  if (retreat.guias.length === 0) return null;
-
   return (
     <section id="guias" className="bg-cream py-[clamp(4rem,9vw,6rem)]">
       <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-12 px-6 sm:px-10 lg:px-24">
@@ -19,21 +12,14 @@ export default function GuidesSection({ retreat }: { retreat: RetreatEvent }) {
           </h2>
         </Reveal>
 
-        <div className="flex w-full flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-16">
-          <Reveal delay={80} className="flex w-full max-w-[467px] items-center justify-center gap-10">
-            {retreat.guias.map((guia) => (
-              <div key={guia.id} className="flex flex-1 flex-col items-center gap-5">
-                <div
-                  className={`relative h-[220px] w-[170px] overflow-hidden sm:h-[260px] sm:w-[200px] ${FORMA_FOTO[guia.fotoForma]}`}
-                >
-                  <Image src={guia.fotoUrl} alt="" fill sizes="200px" className="object-cover" />
-                </div>
-                <div className="flex flex-col items-center gap-1 text-center">
-                  <p className="h3-section text-ink">{guia.nombre}</p>
-                  <p className="text-sm text-terracotta">{guia.rol}</p>
-                </div>
-              </div>
-            ))}
+        <div className="flex w-full flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-16">
+          <Reveal
+            delay={80}
+            className="relative h-[240px] w-full overflow-hidden rounded-tl-[180px] rounded-tr-[20px] rounded-br-[180px] rounded-bl-[20px] bg-sage sm:h-[320px] lg:flex-1"
+          >
+            {retreat.guiasFotoUrl && (
+              <Image src={retreat.guiasFotoUrl} alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+            )}
           </Reveal>
 
           <Reveal delay={160} className="flex flex-1 items-center">

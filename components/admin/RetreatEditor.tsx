@@ -9,18 +9,17 @@ import {
   KEY_ARCHIVO_SECTION_DIVIDER,
   KEY_ARCHIVO_HISTORIA,
   KEY_ARCHIVO_SEO,
-  keyArchivoGuia,
+  KEY_ARCHIVO_GUIAS_FOTO,
   keyArchivoDecorativa,
-  keyArchivoVideoPortada,
+  keyArchivoHistoriaFoto,
   type DatosFormularioAdmin,
   type FechaEditable,
   type IdeaEditable,
-  type VideoEditable,
-  type GuiaEditable,
+  type TestimonioEditable,
   type FaqEditable,
   type FotoEditable,
 } from "@/app/admin/tipos";
-import { CampoTexto, CampoTextarea, CampoCheckbox, CampoSelect, CampoArchivo } from "./Campo";
+import { CampoTexto, CampoTextarea, CampoCheckbox, CampoArchivo } from "./Campo";
 import { ListaEditable } from "./ListaEditable";
 import InscritosView from "./InscritosView";
 import type { Inscrito } from "@/lib/inscritos";
@@ -53,25 +52,21 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     contacto: { ...retreat.contacto },
     fechas: retreat.fechas.map((f, i) => ({ clientId: `fecha-${i}`, label: f.label, start: f.start, end: f.end })),
     ideas: retreat.ideas.map((idea, i) => ({ clientId: `idea-${i}`, titulo: idea.titulo, descripcion: idea.descripcion })),
-    videos: retreat.videos.map((v) => ({
-      clientId: v.id,
-      nombre: v.nombre,
-      cita: v.cita,
-      youtubeId: v.youtubeId ?? "",
-      portadaUrl: v.portadaUrl ?? "",
-    })),
-    guias: retreat.guias.map((g) => ({
-      clientId: g.id,
-      nombre: g.nombre,
-      rol: g.rol,
-      fotoUrl: g.fotoUrl,
-      fotoForma: g.fotoForma,
+    cintaTexto: retreat.cintaTexto,
+    cintaVelocidadSegundos: String(retreat.cintaVelocidadSegundos),
+    testimonios: retreat.testimonios.map((t) => ({
+      clientId: t.id,
+      nombre: t.nombre,
+      cita: t.cita,
+      bajada: t.bajada,
     })),
     guiasIntro: retreat.guiasIntro,
+    guiasFotoUrl: retreat.guiasFotoUrl,
     historia: {
       parrafos: retreat.historia.parrafos.join("\n\n"),
       pendiente: retreat.historia.pendiente,
       imagenUrl: retreat.historia.imagenUrl,
+      imagenes: retreat.historia.imagenes.map((url, i) => ({ clientId: `historia-foto-${i}`, url })),
     },
     faq: retreat.faq.map((f, i) => ({
       clientId: `faq-${i}`,
@@ -102,6 +97,14 @@ type SeccionContenido =
   | "historia"
   | "informacion-clave"
   | "faq";
+
+const NAV_PRINCIPAL: { clave: Vista; etiqueta: string }[] = [
+  { clave: "general", etiqueta: "General" },
+  { clave: "contenido", etiqueta: "Contenido" },
+  { clave: "documentos", etiqueta: "Documentos sitio privado" },
+  { clave: "inscritos", etiqueta: "Inscritos" },
+  { clave: "seo", etiqueta: "SEO" },
+];
 
 // En el mismo orden en que los bloques aparecen en la página pública — cada
 // pestaña trae solo lo que se ve en ese bloque. Lo transversal (nombre del
@@ -138,6 +141,12 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
   const [vista, setVista] = useState<Vista>("contenido");
   const [seccion, setSeccion] = useState<SeccionContenido>("hero");
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  function irA(v: Vista) {
+    setVista(v);
+    setMenuAbierto(false);
+  }
 
   // React 19 reinicia el <form> (incluyendo checkboxes controlados) apenas termina la
   // Server Action, y como su valor lógico no cambió desde la última vez que React lo
@@ -168,27 +177,69 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
     <div className="flex min-h-[100svh] flex-col bg-cream">
       <AdminHeader />
 
+      <div className="flex items-center justify-between border-b border-ink/10 bg-cream px-6 py-4 sm:hidden">
+        <span className="font-body text-sm font-semibold text-ink">
+          {NAV_PRINCIPAL.find((item) => item.clave === vista)?.etiqueta}
+        </span>
+        <button
+          type="button"
+          onClick={() => setMenuAbierto(true)}
+          aria-label="Abrir menú"
+          className="flex h-10 w-10 flex-none flex-col items-center justify-center gap-1.5 rounded-lg text-ink hover:bg-sage/50"
+        >
+          <span className="block h-0.5 w-5 bg-current" />
+          <span className="block h-0.5 w-5 bg-current" />
+          <span className="block h-0.5 w-5 bg-current" />
+        </button>
+      </div>
+
+      {menuAbierto && (
+        <div className="fixed inset-0 z-20 flex sm:hidden">
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setMenuAbierto(false)} />
+          <div className="relative flex w-64 max-w-[80%] flex-col gap-2 bg-cream px-6 py-6 shadow-xl">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-body text-sm font-semibold text-ink">Menú</span>
+              <button
+                type="button"
+                onClick={() => setMenuAbierto(false)}
+                aria-label="Cerrar menú"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-xl leading-none text-ink hover:bg-sage/50"
+              >
+                ×
+              </button>
+            </div>
+            {NAV_PRINCIPAL.map((item) => (
+              <button
+                key={item.clave}
+                type="button"
+                onClick={() => irA(item.clave)}
+                className={claseNavPrincipal(vista === item.clave)}
+              >
+                {item.etiqueta}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col sm:flex-row sm:items-stretch">
-        <aside className="flex w-full flex-none flex-row gap-2 overflow-x-auto px-6 py-6 sm:sticky sm:top-24 sm:w-64 sm:flex-col sm:self-start sm:overflow-visible sm:px-8 sm:py-10">
-          <button type="button" onClick={() => setVista("general")} className={claseNavPrincipal(vista === "general")}>
-            General
-          </button>
-          <button type="button" onClick={() => setVista("contenido")} className={claseNavPrincipal(vista === "contenido")}>
-            Contenido
-          </button>
-          <button type="button" onClick={() => setVista("documentos")} className={claseNavPrincipal(vista === "documentos")}>
-            Documentos sitio privado
-          </button>
-          <button type="button" onClick={() => setVista("inscritos")} className={claseNavPrincipal(vista === "inscritos")}>
-            Inscritos
-          </button>
-          <button type="button" onClick={() => setVista("seo")} className={claseNavPrincipal(vista === "seo")}>
-            SEO
-          </button>
+        <aside className="hidden sm:sticky sm:top-24 sm:flex sm:w-64 sm:flex-none sm:flex-col sm:gap-2 sm:self-start sm:px-8 sm:py-10">
+          {NAV_PRINCIPAL.map((item) => (
+            <button
+              key={item.clave}
+              type="button"
+              onClick={() => irA(item.clave)}
+              className={claseNavPrincipal(vista === item.clave)}
+            >
+              {item.etiqueta}
+            </button>
+          ))}
         </aside>
 
         <div className="min-w-0 flex-1 bg-almost-white px-6 py-10 sm:px-10">
-          {vista === "inscritos" && <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} />}
+          {vista === "inscritos" && (
+            <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} retreatId={retreat.id} />
+          )}
 
           <form
             id="formulario-retreat"
@@ -248,34 +299,39 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
                   </>
                 )}
               />
+              <section className="flex flex-col gap-4">
+                <h3 className="h3-section text-ink">Cinta animada</h3>
+                <CampoTextarea
+                  label="Frase de la cinta (se muestra en mayúsculas, deslizándose en loop)"
+                  value={datos.cintaTexto}
+                  onChange={(v) => set("cintaTexto", v)}
+                  filas={2}
+                />
+                <div className="max-w-[220px]">
+                  <CampoTexto
+                    label="Velocidad (segundos por vuelta)"
+                    tipo="number"
+                    value={datos.cintaVelocidadSegundos}
+                    onChange={(v) => set("cintaVelocidadSegundos", v)}
+                  />
+                </div>
+                <p className="text-xs text-ink/50">Menos segundos = cinta más rápida.</p>
+              </section>
             </div>
           </div>
 
           <div className={claseSeccion("testimonios")}>
-            <ListaEditable<VideoEditable>
+            <ListaEditable<TestimonioEditable>
               titulo="Testimonios"
-              items={datos.videos}
-              onChange={(videos) => set("videos", videos)}
-              nuevoItem={() => ({ clientId: idCliente(), nombre: "", cita: "", youtubeId: "", portadaUrl: "" })}
+              items={datos.testimonios}
+              onChange={(testimonios) => set("testimonios", testimonios)}
+              nuevoItem={() => ({ clientId: idCliente(), nombre: "", cita: "", bajada: "" })}
               renderItem={(item, actualizar) => (
                 <>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <CampoTexto label="Nombre" value={item.nombre} onChange={(v) => actualizar({ nombre: v })} />
-                    <CampoTexto
-                      label="ID de YouTube (opcional)"
-                      value={item.youtubeId}
-                      onChange={(v) => actualizar({ youtubeId: v })}
-                    />
-                  </div>
                   <CampoTextarea label="Cita" value={item.cita} onChange={(v) => actualizar({ cita: v })} filas={2} />
-                  <div className="flex flex-col gap-1.5">
-                    <CampoArchivo
-                      label="Miniatura propia (opcional)"
-                      urlActual={item.portadaUrl}
-                      name={keyArchivoVideoPortada(item.clientId)}
-                      ayuda="800×450 px (proporción 16:9)"
-                    />
-                    <p className="text-xs text-ink/50">Si no subes una, se usa la miniatura automática de YouTube.</p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <CampoTexto label="Nombre de la pareja" value={item.nombre} onChange={(v) => actualizar({ nombre: v })} />
+                    <CampoTexto label="Bajada (una línea)" value={item.bajada} onChange={(v) => actualizar({ bajada: v })} />
                   </div>
                 </>
               )}
@@ -284,42 +340,17 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
 
           <div className={claseSeccion("guias")}>
             <div className="flex flex-col gap-8">
-              <ListaEditable<GuiaEditable>
-                titulo="Quiénes los acompañan"
-                items={datos.guias}
-                onChange={(guias) => set("guias", guias)}
-                nuevoItem={() => ({ clientId: idCliente(), nombre: "", rol: "", fotoUrl: "", fotoForma: "circulo" })}
-                renderItem={(item, actualizar) => (
-                  <>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <CampoTexto label="Nombre" value={item.nombre} onChange={(v) => actualizar({ nombre: v })} />
-                      <CampoTexto label="Rol" value={item.rol} onChange={(v) => actualizar({ rol: v })} />
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <CampoArchivo
-                        label="Foto"
-                        urlActual={item.fotoUrl}
-                        name={keyArchivoGuia(item.clientId)}
-                        ayuda="400×520 px, vertical"
-                      />
-                      <CampoSelect
-                        label="Forma de la foto"
-                        value={item.fotoForma}
-                        onChange={(v) => actualizar({ fotoForma: v as "arco" | "circulo" })}
-                        opciones={[
-                          { valor: "circulo", etiqueta: "Círculo" },
-                          { valor: "arco", etiqueta: "Arco" },
-                        ]}
-                      />
-                    </div>
-                  </>
-                )}
+              <CampoArchivo
+                label="Foto del grupo (horizontal, sin pie de foto)"
+                urlActual={datos.guiasFotoUrl}
+                name={KEY_ARCHIVO_GUIAS_FOTO}
+                ayuda="1200×760 px o más, horizontal"
               />
               <CampoTextarea
-                label="Texto de introducción de la sección de guías"
+                label="Texto de la sección"
                 value={datos.guiasIntro}
                 onChange={(v) => set("guiasIntro", v)}
-                filas={2}
+                filas={4}
               />
             </div>
           </div>
@@ -365,11 +396,34 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
                 onChange={(v) => set("historia", { ...datos.historia, pendiente: v })}
               />
               <CampoArchivo
-                label="Foto de la sección"
+                label="Foto de la sección (se usa si no hay fotos por párrafo abajo)"
                 urlActual={datos.historia.imagenUrl}
                 name={KEY_ARCHIVO_HISTORIA}
                 ayuda="1000×800 px o más"
               />
+              <div className="flex flex-col gap-3">
+                <p className="text-xs text-ink/50">
+                  Opcional: una foto por párrafo — van cambiando con fundido a medida que el texto avanza con el
+                  scroll. Si hay menos fotos que párrafos, la última se repite para los que faltan. Si no se agrega
+                  ninguna, se usa la foto de arriba fija para todos los párrafos.
+                </p>
+                <ListaEditable<FotoEditable>
+                  titulo="Fotos por párrafo"
+                  items={datos.historia.imagenes}
+                  onChange={(imagenes) => set("historia", { ...datos.historia, imagenes })}
+                  nuevoItem={() => ({ clientId: idCliente(), url: "" })}
+                  renderItem={(item) => (
+                    <CampoArchivo
+                      label="Foto"
+                      urlActual={item.url}
+                      name={keyArchivoHistoriaFoto(item.clientId)}
+                      ayuda="1000×800 px o más"
+                    />
+                  )}
+                  etiquetaAgregar="+ Agregar foto"
+                  posicionAgregar="abajo"
+                />
+              </div>
             </section>
           </div>
 

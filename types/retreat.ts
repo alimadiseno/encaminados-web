@@ -25,24 +25,12 @@ export interface Idea {
   descripcion: string;
 }
 
-export interface VideoTestimonio {
+export interface Testimonio {
   id: string;
-  /** Si no hay video real todavía, se deja sin youtubeId — la cita igual se muestra. */
-  youtubeId?: string;
-  /** Reemplaza la miniatura automática de YouTube (i.ytimg.com/vi/{youtubeId}) cuando se quiere una propia. */
-  portadaUrl?: string;
   nombre: string;
   cita: string;
-}
-
-export interface Guia {
-  id: string;
-  nombre: string;
-  rol: string;
-  /** Ruta de la foto en /public. Placeholder de layout mientras no hay foto real confirmada. */
-  fotoUrl: string;
-  /** Forma de recorte de la foto — distingue visualmente sacerdote de matrimonio guía. */
-  fotoForma: "arco" | "circulo";
+  /** Bajada corta (una línea) debajo del nombre, ej. "Casados hace 12 años". */
+  bajada: string;
 }
 
 export interface FaqItem {
@@ -80,14 +68,21 @@ export interface RetreatEvent {
   inscripcionUrl: string;
   contacto: Contacto;
   ideas: Idea[];
-  videos: VideoTestimonio[];
-  guias: Guia[];
-  /** Texto pendiente hasta que el cliente confirme quiénes son los guías. */
+  /** Frase de la cinta ondulada animada entre "Qué es Encaminados" y los testimonios. */
+  cintaTexto: string;
+  /** Segundos que tarda la cinta en dar una vuelta completa — menos es más rápido. */
+  cintaVelocidadSegundos: number;
+  testimonios: Testimonio[];
+  /** Texto de la sección "Quiénes los acompañan" — sin nombres, es una descripción general del equipo. */
   guiasIntro: string;
+  /** Foto horizontal única del grupo de guías, sin pie de foto. */
+  guiasFotoUrl: string;
   historia: {
     parrafos: string[];
     pendiente: boolean;
     imagenUrl: string;
+    /** Fotos opcionales, una por párrafo (se cruzan con fundido a medida que el texto avanza). Si está vacío, se usa `imagenUrl` fija. */
+    imagenes: string[];
   };
   faq: FaqItem[];
   /** Fotos de la imagen del hero y del logo entre hero y "Qué es". */

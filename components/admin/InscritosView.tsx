@@ -1,29 +1,24 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, type ReactNode } from "react";
 import {
   actualizarInscrito,
   crearInscritoManual,
   type InscritoActionState,
 } from "@/app/admin/inscritos-actions";
 import type { DetalleExtra, EstadoPago, Inscrito } from "@/lib/inscritos";
-
-const ETIQUETA_ESTADO: Record<EstadoPago, string> = {
-  pendiente: "Pendiente",
-  parcial: "Parcial",
-  pagado: "Pagado",
-};
-
-const ETIQUETA_DETALLE: Record<keyof DetalleExtra, string> = {
-  fechaMatrimonio: "Fecha de matrimonio",
-  colegioRC: "¿Apoderados/colaboradores de un colegio de la Red RC?",
-  alergias: "Alergias o intolerancias",
-  motivacion: "Qué los motivó a venir",
-  expectativas: "Qué expectativa tienen",
-  gruposEncuentro: "¿Participan de grupos de encuentro?",
-  cantidadHijos: "Cuántos hijos tienen",
-  comentarios: "Comentarios",
-};
+import {
+  ETIQUETA_DETALLE,
+  ETIQUETA_ESTADO_PAGO,
+  apellido,
+  apellidosPareja,
+  coincideFecha,
+  esRespuestaAfirmativa,
+  esRespuestaNegativa,
+  etiquetaCorta,
+  formatearFecha,
+  normalizar,
+} from "@/lib/inscritos-formato";
 
 const claseChip = (estado: EstadoPago) =>
   ({
@@ -31,10 +26,6 @@ const claseChip = (estado: EstadoPago) =>
     parcial: "bg-icon-bg text-ink",
     pagado: "bg-sage text-ink",
   })[estado];
-
-function formatearFecha(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" });
-}
 
 interface Conteo {
   etiqueta: string;
@@ -76,89 +67,6 @@ function agruparConLimite(valores: (string | undefined)[], limite: number): Cont
   const visibles = agrupado.slice(0, limite - 1);
   const resto = agrupado.slice(limite - 1).reduce((acc, c) => acc + c.cantidad, 0);
   return [...visibles, { etiqueta: "Otras respuestas afirmativas", cantidad: resto }];
-}
-
-const CONECTORES_APELLIDO = new Set(["de", "del", "la", "los", "las"]);
-
-/**
- * Heurística best-effort: en "Nombre y apellidos" chileno, los últimos dos
- * "bloques" de palabras suelen ser apellido paterno + materno, así que se
- * usa el segundo-desde-el-final como identificador de familia. No es
- * infalible — nombres con dos nombres de pila y un solo apellido (ej.
- * "María Jesús Ugarte") o apellidos compuestos con conectores ("del Rio")
- * pueden salir mal identificados, no hay forma de evitarlo sin interpretar
- * el texto.
- */
-function apellido(nombreCompleto: string): string {
-  const palabras = nombreCompleto.trim().split(/\s+/).filter(Boolean);
-  if (palabras.length === 0) return "";
-
-  const bloques: string[] = [];
-  for (let i = 0; i < palabras.length; i++) {
-    if (CONECTORES_APELLIDO.has(palabras[i].toLowerCase())) {
-      // Encadena conectores seguidos ("de la Cerda") en un solo bloque en vez
-      // de partirlos por la mitad.
-      let fin = i;
-      while (fin < palabras.length && CONECTORES_APELLIDO.has(palabras[fin].toLowerCase())) fin++;
-      if (fin < palabras.length) {
-        bloques.push(palabras.slice(i, fin + 1).join(" "));
-        i = fin;
-      } else {
-        bloques.push(palabras.slice(i).join(" "));
-        i = palabras.length - 1;
-      }
-    } else {
-      bloques.push(palabras[i]);
-    }
-  }
-
-  return bloques.length >= 3 ? bloques[bloques.length - 2] : bloques[bloques.length - 1];
-}
-
-function apellidosPareja(inscrito: Inscrito): string {
-  return `${apellido(inscrito.nombreMarido)} ${apellido(inscrito.nombreEsposa)}`;
-}
-
-function esRespuestaNegativa(valor: string): boolean {
-  const limpio = valor.trim().toLowerCase();
-  return limpio === "no" || limpio === "n/a" || limpio === "na" || limpio.startsWith("ningun");
-}
-
-/** Cualquier respuesta que empiece con "sí"/"si" ("Sí, del colegio X", "Si"), sin agarrar palabras como "sin". */
-function esRespuestaAfirmativa(valor: string): boolean {
-  return /^si\b/.test(normalizar(valor));
-}
-
-const DIACRITICOS = new RegExp("[\\u0300-\\u036f]", "g");
-
-function normalizar(texto: string): string {
-  return texto
-    .normalize("NFD")
-    .replace(DIACRITICOS, "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
-}
-
-/**
- * El texto de "fecha elegida" que llega por el Google Form se escribe a mano
- * en la hoja de cálculo y puede no calzar carácter a carácter con el label
- * configurado en el panel (ej. con año agregado, o con "Retiro del..."
- * delante) — por eso la comparación es por inclusión en ambos sentidos, no
- * por igualdad estricta.
- */
-function coincideFecha(fechaElegida: string, fecha: string): boolean {
-  const a = normalizar(fechaElegida);
-  const b = normalizar(fecha);
-  return a === b || a.includes(b) || b.includes(a);
-}
-
-/** De "2 al 4 de octubre" saca "2-4 oct." para usar en botones de filtro compactos. */
-function etiquetaCorta(label: string): string {
-  const match = label.match(/^(\d+)\s+al\s+(\d+)\s+de\s+(\p{L}+)/u);
-  if (!match) return label;
-  const [, d1, d2, mes] = match;
-  return `${d1}-${d2} ${mes.slice(0, 3).toLowerCase()}.`;
 }
 
 interface Metricas {
@@ -211,9 +119,7 @@ function GrillaMetricas({ metricas, grande }: { metricas: Metricas; grande?: boo
 }
 
 function claseBotonFiltro(activo: boolean): string {
-  return `rounded-full px-3 py-1 text-xs font-bold tracking-[0.04em] uppercase transition-colors ${
-    activo ? "bg-terracotta text-peach" : "bg-block text-ink"
-  }`;
+  return `filter-chip ${activo ? "bg-icon-bg text-ink" : "bg-transparent text-terracotta hover:bg-icon-bg hover:text-ink"}`;
 }
 
 function BotonesFiltroFecha({ fechas, valor, onChange }: { fechas: string[]; valor: string; onChange: (valor: string) => void }) {
@@ -224,6 +130,41 @@ function BotonesFiltroFecha({ fechas, valor, onChange }: { fechas: string[]; val
       </button>
       {fechas.map((f) => (
         <button key={f} type="button" onClick={() => onChange(f)} className={claseBotonFiltro(valor === f)}>
+          {etiquetaCorta(f)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Igual que BotonesFiltroFecha pero sin "Todos" — para exports que se generan por sesión y necesitan una fecha puntual. */
+function BotonesFecha({ fechas, valor, onChange }: { fechas: string[]; valor: string; onChange: (valor: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {fechas.map((f) => (
+        <button key={f} type="button" onClick={() => onChange(f)} className={claseBotonFiltro(valor === f)}>
+          {etiquetaCorta(f)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Multi-select de fechas (a diferencia de BotonesFiltroFecha/BotonesFecha, que son de una sola).
+ * "Todos" limpia la selección — ninguna fecha marcada significa "sin filtro", no "ninguna".
+ */
+function SeleccionFechas({ fechas, seleccionadas, onChange }: { fechas: string[]; seleccionadas: string[]; onChange: (v: string[]) => void }) {
+  function alternar(f: string) {
+    onChange(seleccionadas.includes(f) ? seleccionadas.filter((v) => v !== f) : [...seleccionadas, f]);
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={() => onChange([])} className={claseBotonFiltro(seleccionadas.length === 0)}>
+        Todos
+      </button>
+      {fechas.map((f) => (
+        <button key={f} type="button" onClick={() => alternar(f)} className={claseBotonFiltro(seleccionadas.includes(f))}>
           {etiquetaCorta(f)}
         </button>
       ))}
@@ -456,7 +397,7 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
           <td className="px-2 py-2.5">{inscrito.fechaElegida}</td>
           <td className="px-2 py-2.5">
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${claseChip(inscrito.estadoPago)}`}>
-              {ETIQUETA_ESTADO[inscrito.estadoPago]}
+              {ETIQUETA_ESTADO_PAGO[inscrito.estadoPago]}
             </span>
           </td>
           <td className="px-2 py-2.5">{inscrito.monto != null ? `$${inscrito.monto.toLocaleString("es-CL")}` : "—"}</td>
@@ -524,7 +465,7 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
           <Persona nombre={inscrito.nombreMarido} telefono={inscrito.telefonoMarido} email={inscrito.emailMarido} />
         </div>
         <span className={`flex-none rounded-full px-3 py-1 text-xs font-semibold ${claseChip(inscrito.estadoPago)}`}>
-          {ETIQUETA_ESTADO[inscrito.estadoPago]}
+          {ETIQUETA_ESTADO_PAGO[inscrito.estadoPago]}
         </span>
       </div>
 
@@ -593,6 +534,173 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Card individual dentro de "Exportación de datos" — nombre, descripción, formato, filtros (opcional) y botón de descarga. */
+function TarjetaExportacion({
+  icono,
+  nombre,
+  descripcion,
+  formato,
+  href,
+  children,
+}: {
+  icono: string;
+  nombre: string;
+  descripcion: string;
+  formato: string;
+  href: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl bg-almost-white p-4">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <img src={icono} alt="" className="size-5" />
+          {nombre}
+        </h3>
+        <span className="flex-none rounded-full bg-card px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-ink/60 uppercase">
+          {formato}
+        </span>
+      </div>
+      <p className="text-sm text-ink/60">{descripcion}</p>
+      {children}
+      <a
+        href={href}
+        className="self-start rounded-full bg-terracotta px-4 py-2 text-xs font-bold tracking-[0.08em] text-peach uppercase transition-opacity hover:opacity-90"
+      >
+        Descargar
+      </a>
+    </div>
+  );
+}
+
+function TarjetaFichasMonitores({ retreatId, fechas }: { retreatId: string; fechas: string[] }) {
+  const [fecha, setFecha] = useState("todas");
+  const params = new URLSearchParams({ retreatId });
+  if (fecha !== "todas") params.set("fecha", fecha);
+
+  return (
+    <TarjetaExportacion
+      icono="/icons/partner.svg"
+      nombre="Fichas para monitores"
+      descripcion="Una hoja carta por pareja, con todos sus datos salvo pago."
+      formato="PDF"
+      href={`/api/admin/inscritos/fichas?${params.toString()}`}
+    >
+      <BotonesFiltroFecha fechas={fechas} valor={fecha} onChange={setFecha} />
+    </TarjetaExportacion>
+  );
+}
+
+/** Fecha obligatoria (no "todas") — cocina prepara por sesión, no para el retiro completo. */
+function TarjetaAlergiasCocina({ retreatId, fechas }: { retreatId: string; fechas: string[] }) {
+  const [fecha, setFecha] = useState(fechas[0] ?? "");
+  const params = new URLSearchParams({ retreatId, fecha });
+
+  return (
+    <TarjetaExportacion
+      icono="/icons/grocery.svg"
+      nombre="Alergias para cocina"
+      descripcion="Lista de parejas con alergia o restricción declarada, para pasar a los encargados de cocina."
+      formato="PDF"
+      href={`/api/admin/inscritos/alergias?${params.toString()}`}
+    >
+      <BotonesFecha fechas={fechas} valor={fecha} onChange={setFecha} />
+    </TarjetaExportacion>
+  );
+}
+
+function TarjetaContactosMailchimp({ retreatId, fechas }: { retreatId: string; fechas: string[] }) {
+  const [seleccionadas, setSeleccionadas] = useState<string[]>([]);
+  const params = new URLSearchParams({ retreatId });
+  seleccionadas.forEach((f) => params.append("fecha", f));
+
+  return (
+    <TarjetaExportacion
+      icono="/icons/mail-terracotta.svg"
+      nombre="Contactos para comunicaciones"
+      descripcion="Una fila por persona (correo, teléfono, colegio y fecha), con la familia como referencia para agrupar parejas."
+      formato="EXCEL"
+      href={`/api/admin/inscritos/contactos?${params.toString()}`}
+    >
+      <SeleccionFechas fechas={fechas} seleccionadas={seleccionadas} onChange={setSeleccionadas} />
+    </TarjetaExportacion>
+  );
+}
+
+function TarjetaCompletoAdmin({ retreatId, fechas }: { retreatId: string; fechas: string[] }) {
+  const [seleccionadas, setSeleccionadas] = useState<string[]>([]);
+  const [estado, setEstado] = useState<EstadoPago | "todos">("todos");
+  const params = new URLSearchParams({ retreatId });
+  seleccionadas.forEach((f) => params.append("fecha", f));
+  if (estado !== "todos") params.set("estado", estado);
+
+  return (
+    <TarjetaExportacion
+      icono="/icons/account-balance.svg"
+      nombre="Completo para admin"
+      descripcion="Todas las columnas, incluyendo pagos y notas internas."
+      formato="EXCEL"
+      href={`/api/admin/inscritos/completo?${params.toString()}`}
+    >
+      <div className="flex flex-col gap-2">
+        <SeleccionFechas fechas={fechas} seleccionadas={seleccionadas} onChange={setSeleccionadas} />
+        <select
+          value={estado}
+          onChange={(e) => setEstado(e.target.value as EstadoPago | "todos")}
+          className="self-start rounded-lg border-2 border-ink/15 bg-cream px-3 py-1.5 text-xs"
+        >
+          <option value="todos">Cualquier estado de pago</option>
+          <option value="pendiente">Pago pendiente</option>
+          <option value="parcial">Pago parcial</option>
+          <option value="pagado">Pagado completo</option>
+        </select>
+      </div>
+    </TarjetaExportacion>
+  );
+}
+
+/** El bloque de exportación es alto (4 cards con filtros) — vive en un modal para no tapar los datos del panel a primera vista. */
+function BotonExportacion({ retreatId, fechas }: { retreatId: string; fechas: string[] }) {
+  const [abierto, setAbierto] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="self-start rounded-full border-2 border-terracotta px-4 py-2 text-xs font-bold tracking-[0.08em] text-terracotta uppercase transition-colors hover:bg-terracotta hover:text-peach"
+      >
+        Exportar datos
+      </button>
+
+      {abierto && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setAbierto(false)} />
+          <div className="relative flex max-h-[85vh] w-full max-w-3xl flex-col gap-4 overflow-y-auto rounded-2xl bg-card p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="h2-section text-ink">Exportación de datos</h2>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                aria-label="Cerrar"
+                className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-xl leading-none text-ink hover:bg-sage/50"
+              >
+                ×
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <TarjetaContactosMailchimp retreatId={retreatId} fechas={fechas} />
+              <TarjetaFichasMonitores retreatId={retreatId} fechas={fechas} />
+              {fechas.length > 0 && <TarjetaAlergiasCocina retreatId={retreatId} fechas={fechas} />}
+              <TarjetaCompletoAdmin retreatId={retreatId} fechas={fechas} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -681,7 +789,15 @@ function FormularioNuevoInscrito({ fechas }: { fechas: string[] }) {
   );
 }
 
-export default function InscritosView({ inscritos, fechas }: { inscritos: Inscrito[]; fechas: string[] }) {
+export default function InscritosView({
+  inscritos,
+  fechas,
+  retreatId,
+}: {
+  inscritos: Inscrito[];
+  fechas: string[];
+  retreatId: string;
+}) {
   const [vista, setVista] = useState<"tabla" | "tarjetas">("tabla");
   const [filtroEstado, setFiltroEstado] = useState<EstadoPago | "todos">("todos");
   const [filtroFecha, setFiltroFecha] = useState<string>("todas");
@@ -745,6 +861,8 @@ export default function InscritosView({ inscritos, fechas }: { inscritos: Inscri
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8">
       <h1 className="h2-section text-ink">Inscritos</h1>
+
+        <BotonExportacion retreatId={retreatId} fechas={fechas} />
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">

@@ -1,86 +1,114 @@
 "use client";
 
-import { useState } from "react";
-import type { RetreatEvent, VideoTestimonio } from "@/types/retreat";
+import { useEffect, useRef, useState } from "react";
+import type { RetreatEvent, Testimonio } from "@/types/retreat";
 import Reveal from "./Reveal";
 
-function VideoCard({ video }: { video: VideoTestimonio }) {
-  const [playing, setPlaying] = useState(false);
-  const tieneVideo = Boolean(video.youtubeId);
-  const portada = video.portadaUrl || (video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg` : undefined);
-
+function TestimonioCard({ testimonio }: { testimonio: Testimonio }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-card">
-      <div className="relative flex h-[220px] w-full items-center justify-center bg-ink">
-        {tieneVideo && playing ? (
-          <iframe
-            className="absolute inset-0 h-full w-full border-0"
-            src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
-            title={video.nombre}
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : tieneVideo ? (
-          <button
-            type="button"
-            onClick={() => setPlaying(true)}
-            aria-label={`Reproducir el testimonio de ${video.nombre}`}
-            className="absolute inset-0 flex h-full w-full items-center justify-center"
-            style={{
-              backgroundImage: `url(${portada})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <span className="flex size-14 items-center justify-center rounded-[28px] bg-icon-bg">
-              <img src="/icons/play.svg" alt="" className="size-5" />
-            </span>
-          </button>
-        ) : (
-          <span className="flex size-14 items-center justify-center rounded-[28px] bg-icon-bg" aria-hidden="true">
-            <img src="/icons/play.svg" alt="" className="size-5" />
-          </span>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-3 p-6">
-        <h3 className="h3-section text-ink">{video.nombre}</h3>
-        <p className="text-sm leading-[1.5] text-ink">&ldquo;{video.cita}&rdquo;</p>
+    <div className="flex h-full min-h-[280px] w-[420px] flex-none flex-col gap-5 rounded-3xl bg-card p-8 sm:w-[510px]">
+      <span className="font-display text-6xl leading-none text-terracotta" aria-hidden="true">
+        &ldquo;
+      </span>
+      <p className="flex-1 text-base leading-[1.6] text-ink">{testimonio.cita}</p>
+      <div className="flex flex-col gap-1 border-t border-ink/10 pt-4">
+        <p className="text-base font-semibold text-ink">{testimonio.nombre}</p>
+        {testimonio.bajada && <p className="text-sm text-ink/60">{testimonio.bajada}</p>}
       </div>
     </div>
   );
 }
 
 export default function TestimonialsSection({ retreat }: { retreat: RetreatEvent }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [puedeIzquierda, setPuedeIzquierda] = useState(false);
+  const [puedeDerecha, setPuedeDerecha] = useState(false);
+
+  function actualizarFlechas() {
+    const el = scrollRef.current;
+    if (!el) return;
+    setPuedeIzquierda(el.scrollLeft > 4);
+    setPuedeDerecha(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }
+
+  useEffect(() => {
+    actualizarFlechas();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", actualizarFlechas, { passive: true });
+    window.addEventListener("resize", actualizarFlechas);
+    return () => {
+      el.removeEventListener("scroll", actualizarFlechas);
+      window.removeEventListener("resize", actualizarFlechas);
+    };
+  }, [retreat.testimonios]);
+
+  function desplazar(direccion: -1 | 1) {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direccion * el.clientWidth * 0.8, behavior: "smooth" });
+  }
+
   return (
-    <section id="testimonios" className="bg-sage py-[clamp(4rem,9vw,6rem)]">
-      <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-12 px-6 sm:px-10 lg:px-24">
-        <Reveal>
-          <h2 className="h1-section max-w-2xl text-center text-ink">
-            Voces de quienes <span className="text-terracotta italic">caminaron</span>
-          </h2>
-        </Reveal>
+    <section id="testimonios" className="flex flex-col items-center gap-12 bg-sage py-[clamp(4rem,9vw,6rem)]">
+      <Reveal className="px-6 sm:px-10">
+        <h2 className="h1-section max-w-2xl text-center text-ink">
+          Voces de quienes <span className="text-terracotta italic">caminaron</span>
+        </h2>
+      </Reveal>
 
-        <ul className="grid w-full list-none gap-6 p-0 sm:grid-cols-3">
-          {retreat.videos.map((video, i) => (
-            <li key={video.id}>
-              <Reveal delay={i * 80} className="h-full">
-                <VideoCard video={video} />
-              </Reveal>
-            </li>
+      {/* Contenedor a todo el ancho de la pantalla (no del max-w del resto del
+          sitio) — así las tarjetas se cortan en el borde real de la ventana
+          al hacer scroll, no en un margen interno. */}
+      <div className="relative w-full">
+        <div
+          ref={scrollRef}
+          className="sin-scrollbar flex w-full gap-6 overflow-x-auto px-6 pb-2 sm:px-10 lg:px-24"
+        >
+          {retreat.testimonios.map((testimonio, i) => (
+            <Reveal key={testimonio.id} delay={i * 80} className="flex-none">
+              <TestimonioCard testimonio={testimonio} />
+            </Reveal>
           ))}
-        </ul>
+        </div>
 
-        <Reveal>
-          <a
-            href={retreat.inscripcionUrl}
-            target="_blank"
-            rel="noopener"
-            className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+        {puedeIzquierda && (
+          <button
+            type="button"
+            aria-label="Ver testimonios anteriores"
+            onClick={() => desplazar(-1)}
+            className="absolute top-1/2 left-4 hidden -translate-y-1/2 items-center justify-center rounded-full bg-cream/90 p-3 text-ink shadow-[0_2px_10px_rgba(0,0,0,.12)] transition-colors hover:bg-cream lg:flex"
           >
-            Inscribirme ahora
-          </a>
-        </Reveal>
+            <svg viewBox="0 0 24 24" className="h-5 w-5" stroke="currentColor" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+        )}
+
+        {puedeDerecha && (
+          <button
+            type="button"
+            aria-label="Ver más testimonios"
+            onClick={() => desplazar(1)}
+            className="absolute top-1/2 right-4 hidden -translate-y-1/2 items-center justify-center rounded-full bg-cream/90 p-3 text-ink shadow-[0_2px_10px_rgba(0,0,0,.12)] transition-colors hover:bg-cream lg:flex"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" stroke="currentColor" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        )}
       </div>
+
+      <Reveal>
+        <a
+          href={retreat.inscripcionUrl}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-terracotta px-8 py-[18px] text-sm font-bold tracking-[0.14em] text-peach uppercase no-underline transition-opacity hover:opacity-90"
+        >
+          Inscribirme ahora
+        </a>
+      </Reveal>
     </section>
   );
 }

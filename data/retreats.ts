@@ -30,15 +30,7 @@ export interface FilaVideo extends FilaOrdenable {
   id: string;
   nombre: string;
   cita: string;
-  youtube_id: string | null;
-  portada_url: string | null;
-}
-export interface FilaGuia extends FilaOrdenable {
-  id: string;
-  nombre: string;
-  rol: string;
-  foto_url: string | null;
-  foto_forma: string;
+  bajada: string;
 }
 export interface FilaFaq extends FilaOrdenable {
   pregunta: string;
@@ -66,7 +58,10 @@ export interface FilaRetreat {
   whatsapp: string;
   whatsapp_mensaje: string;
   email: string;
+  cinta_texto: string;
+  cinta_velocidad_segundos: number;
   guias_intro: string;
+  guias_foto_url: string | null;
   historia_texto: string;
   historia_pendiente: boolean;
   hero_imagen_url: string | null;
@@ -79,9 +74,9 @@ export interface FilaRetreat {
   retreat_fechas: FilaFecha[];
   retreat_ideas: FilaIdea[];
   retreat_videos: FilaVideo[];
-  retreat_guias: FilaGuia[];
   retreat_faq: FilaFaq[];
   retreat_photo_strip: FilaFoto[];
+  retreat_historia_fotos: FilaFoto[];
 }
 
 function partirParrafos(texto: string): string[] {
@@ -101,10 +96,10 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       `*,
       retreat_fechas ( label, fecha_inicio, fecha_termino, orden ),
       retreat_ideas ( titulo, descripcion, orden ),
-      retreat_videos ( id, nombre, cita, youtube_id, portada_url, orden ),
-      retreat_guias ( id, nombre, rol, foto_url, foto_forma, orden ),
+      retreat_videos ( id, nombre, cita, bajada, orden ),
       retreat_faq ( pregunta, respuesta, enlace_texto, enlace_href, orden ),
-      retreat_photo_strip ( foto_url, orden )`,
+      retreat_photo_strip ( foto_url, orden ),
+      retreat_historia_fotos ( foto_url, orden )`,
     )
     .eq("slug", slug)
     .single();
@@ -153,25 +148,21 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       titulo: i.titulo,
       descripcion: i.descripcion,
     })),
-    videos: ordenar(retreat.retreat_videos).map((v) => ({
+    cintaTexto: retreat.cinta_texto,
+    cintaVelocidadSegundos: retreat.cinta_velocidad_segundos,
+    testimonios: ordenar(retreat.retreat_videos).map((v) => ({
       id: v.id,
       nombre: v.nombre,
       cita: v.cita,
-      youtubeId: v.youtube_id ?? undefined,
-      portadaUrl: v.portada_url ?? undefined,
-    })),
-    guias: ordenar(retreat.retreat_guias).map((g) => ({
-      id: g.id,
-      nombre: g.nombre,
-      rol: g.rol,
-      fotoUrl: g.foto_url ?? "",
-      fotoForma: g.foto_forma as "arco" | "circulo",
+      bajada: v.bajada,
     })),
     guiasIntro: retreat.guias_intro,
+    guiasFotoUrl: retreat.guias_foto_url ?? "",
     historia: {
       parrafos: partirParrafos(retreat.historia_texto),
       pendiente: retreat.historia_pendiente,
       imagenUrl: retreat.historia_imagen_url ?? "",
+      imagenes: ordenar(retreat.retreat_historia_fotos).map((f) => f.foto_url),
     },
     faq: ordenar(retreat.retreat_faq).map((f) => ({
       pregunta: f.pregunta,

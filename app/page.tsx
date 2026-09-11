@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getFeaturedRetreat, fechasLabel } from "@/data/retreats";
 import Reveal from "@/components/Reveal";
+import WaveBanner from "@/components/WaveBanner";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import WhatIsSection from "@/components/WhatIsSection";
@@ -74,31 +75,47 @@ export default async function Home() {
       <main>
         <Hero retreat={retreat} />
 
-        <div className="flex justify-center bg-cream pt-6">
-          <Reveal>
-            <Image
-              src={retreat.sectionDividerImagenUrl}
-              alt=""
-              width={339}
-              height={151}
-              className="h-[151px] w-[339px] rounded-2xl object-cover"
-            />
-          </Reveal>
+        {/* Se apoya sobre el Hero (sticky, z-0) y lo cubre al hacer scroll. La
+            onda es parte de esta sección (no del Hero): va anclada al borde
+            superior, así que sube junto con la cortina sobre la foto del Hero. */}
+        <div className="relative z-10 bg-cream">
+          <img
+            src="/icons/hero-wave.svg"
+            alt=""
+            className="absolute inset-x-0 bottom-full h-[70px] w-full"
+          />
+          <div className="flex justify-center pt-6">
+            <Reveal>
+              <Image
+                src={retreat.sectionDividerImagenUrl}
+                alt=""
+                width={339}
+                height={151}
+                className="h-[151px] w-[339px] rounded-2xl object-cover"
+              />
+            </Reveal>
+          </div>
+
+          <WhatIsSection retreat={retreat} />
         </div>
 
-        <WhatIsSection retreat={retreat} />
-        <div className="overflow-hidden bg-cream pb-16 sm:pb-24">
-          <Reveal>
-            <img src="/icons/divider-brush.svg" alt="" className="h-auto w-[106%] max-w-none -ml-[3%]" />
-          </Reveal>
+        {/* Envuelve el resto de las secciones en un elemento posicionado: sin
+            esto, al ser "normal flow" quedan por debajo del Hero (sticky) en
+            el orden de apilamiento y se veía la foto del Hero de fondo. */}
+        <div className="relative z-10">
+          <div className="overflow-hidden bg-cream pb-16 sm:pb-24">
+            <Reveal>
+              <WaveBanner frase={retreat.cintaTexto} velocidadSegundos={retreat.cintaVelocidadSegundos} />
+            </Reveal>
+          </div>
+          <TestimonialsSection retreat={retreat} />
+          <GuidesSection retreat={retreat} />
+          <PhotoStrip retreat={retreat} />
+          <HistorySection retreat={retreat} />
+          <LogisticsSection retreat={retreat} />
+          <FaqSection retreat={retreat} />
+          <ClosingSection retreat={retreat} />
         </div>
-        <TestimonialsSection retreat={retreat} />
-        <GuidesSection retreat={retreat} />
-        <PhotoStrip retreat={retreat} />
-        <HistorySection retreat={retreat} />
-        <LogisticsSection retreat={retreat} />
-        <FaqSection retreat={retreat} />
-        <ClosingSection retreat={retreat} />
       </main>
 
       <Footer retreat={retreat} />

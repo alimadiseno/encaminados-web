@@ -10,9 +10,9 @@ import {
   KEY_ARCHIVO_SECTION_DIVIDER,
   KEY_ARCHIVO_HISTORIA,
   KEY_ARCHIVO_SEO,
-  keyArchivoGuia,
+  KEY_ARCHIVO_GUIAS_FOTO,
   keyArchivoDecorativa,
-  keyArchivoVideoPortada,
+  keyArchivoHistoriaFoto,
   type DatosFormularioAdmin,
 } from "@/app/admin/tipos";
 
@@ -99,6 +99,10 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
   try {
     const supabase = await getSupabaseAdminClient();
 
+    const velocidadIngresada = Number(datos.cintaVelocidadSegundos);
+    const cintaVelocidadSegundos =
+      Number.isFinite(velocidadIngresada) && velocidadIngresada > 0 ? Math.round(velocidadIngresada) : 20;
+
     const heroImagenUrl = await subirImagenSiCorresponde(supabase, formData, KEY_ARCHIVO_HERO, datos.heroImagenUrl);
     const sectionDividerImagenUrl = await subirImagenSiCorresponde(
       supabase,
@@ -113,25 +117,24 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
       datos.historia.imagenUrl,
     );
     const seoImagenUrl = await subirImagenSiCorresponde(supabase, formData, KEY_ARCHIVO_SEO, datos.seo.imagenUrl);
-
-    const guiasConFoto = await Promise.all(
-      datos.guias.map(async (g) => ({
-        ...g,
-        fotoUrl: await subirImagenSiCorresponde(supabase, formData, keyArchivoGuia(g.clientId), g.fotoUrl),
-      })),
-    );
-
-    const videosConPortada = await Promise.all(
-      datos.videos.map(async (v) => ({
-        ...v,
-        portadaUrl: await subirImagenSiCorresponde(supabase, formData, keyArchivoVideoPortada(v.clientId), v.portadaUrl),
-      })),
+    const guiasFotoUrl = await subirImagenSiCorresponde(
+      supabase,
+      formData,
+      KEY_ARCHIVO_GUIAS_FOTO,
+      datos.guiasFotoUrl,
     );
 
     const fotosConUrl = await Promise.all(
       datos.fotosDecorativas.map(async (f) => ({
         ...f,
         url: await subirImagenSiCorresponde(supabase, formData, keyArchivoDecorativa(f.clientId), f.url),
+      })),
+    );
+
+    const fotosHistoriaConUrl = await Promise.all(
+      datos.historia.imagenes.map(async (f) => ({
+        ...f,
+        url: await subirImagenSiCorresponde(supabase, formData, keyArchivoHistoriaFoto(f.clientId), f.url),
       })),
     );
 
@@ -148,10 +151,13 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
         cupos: datos.cupos,
         cupos_descripcion: datos.cuposDescripcion,
         inscripcion_url: datos.inscripcionUrl,
+        cinta_texto: datos.cintaTexto,
+        cinta_velocidad_segundos: cintaVelocidadSegundos,
         whatsapp: datos.contacto.whatsapp,
         whatsapp_mensaje: datos.contacto.whatsappMensaje,
         email: datos.contacto.email,
         guias_intro: datos.guiasIntro,
+        guias_foto_url: guiasFotoUrl || null,
         historia_texto: datos.historia.parrafos,
         historia_pendiente: datos.historia.pendiente,
         hero_imagen_url: heroImagenUrl || null,
@@ -200,27 +206,12 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
       supabase,
       "retreat_videos",
       retreatId,
-      videosConPortada.map((v, i) => ({
+      datos.testimonios.map((t, i) => ({
         retreat_id: retreatId,
         orden: i,
-        nombre: v.nombre,
-        cita: v.cita,
-        youtube_id: v.youtubeId || null,
-        portada_url: v.portadaUrl || null,
-      })),
-    );
-
-    await reemplazarTablaHija(
-      supabase,
-      "retreat_guias",
-      retreatId,
-      guiasConFoto.map((g, i) => ({
-        retreat_id: retreatId,
-        orden: i,
-        nombre: g.nombre,
-        rol: g.rol,
-        foto_url: g.fotoUrl || null,
-        foto_forma: g.fotoForma,
+        nombre: t.nombre,
+        cita: t.cita,
+        bajada: t.bajada,
       })),
     );
 
@@ -243,6 +234,17 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
       "retreat_photo_strip",
       retreatId,
       fotosConUrl.map((f, i) => ({
+        retreat_id: retreatId,
+        orden: i,
+        foto_url: f.url,
+      })),
+    );
+
+    await reemplazarTablaHija(
+      supabase,
+      "retreat_historia_fotos",
+      retreatId,
+      fotosHistoriaConUrl.map((f, i) => ({
         retreat_id: retreatId,
         orden: i,
         foto_url: f.url,

@@ -24,20 +24,11 @@ export interface IdeaEditable {
   descripcion: string;
 }
 
-export interface VideoEditable {
+export interface TestimonioEditable {
   clientId: string;
   nombre: string;
   cita: string;
-  youtubeId: string;
-  portadaUrl: string;
-}
-
-export interface GuiaEditable {
-  clientId: string;
-  nombre: string;
-  rol: string;
-  fotoUrl: string;
-  fotoForma: "arco" | "circulo";
+  bajada: string;
 }
 
 export interface FaqEditable {
@@ -67,10 +58,12 @@ export interface DatosFormularioAdmin {
   contacto: { whatsapp: string; whatsappMensaje: string; email: string };
   fechas: FechaEditable[];
   ideas: IdeaEditable[];
-  videos: VideoEditable[];
-  guias: GuiaEditable[];
+  cintaTexto: string;
+  cintaVelocidadSegundos: string;
+  testimonios: TestimonioEditable[];
   guiasIntro: string;
-  historia: { parrafos: string; pendiente: boolean; imagenUrl: string };
+  guiasFotoUrl: string;
+  historia: { parrafos: string; pendiente: boolean; imagenUrl: string; imagenes: FotoEditable[] };
   faq: FaqEditable[];
   heroImagenUrl: string;
   sectionDividerImagenUrl: string;
@@ -83,6 +76,6 @@ export const KEY_ARCHIVO_HERO = "file:hero";
 export const KEY_ARCHIVO_SECTION_DIVIDER = "file:sectionDivider";
 export const KEY_ARCHIVO_HISTORIA = "file:historiaImagen";
 export const KEY_ARCHIVO_SEO = "file:seoImagen";
-export const keyArchivoGuia = (clientId: string) => `file:guia:${clientId}`;
-export const keyArchivoVideoPortada = (clientId: string) => `file:videoPortada:${clientId}`;
+export const KEY_ARCHIVO_GUIAS_FOTO = "file:guiasFoto";
 export const keyArchivoDecorativa = (clientId: string) => `file:decorativa:${clientId}`;
+export const keyArchivoHistoriaFoto = (clientId: string) => `file:historiaFoto:${clientId}`;

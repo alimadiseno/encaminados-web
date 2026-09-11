@@ -3,14 +3,27 @@ import Reveal from "./Reveal";
 
 export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
   return (
-    <section id="inscripcion" className="relative overflow-hidden bg-cream pt-[clamp(4rem,9vw,6rem)]">
-      <div className="mx-auto flex max-w-[720px] flex-col items-center gap-10 px-6 text-center sm:px-8">
+    <section
+      id="inscripcion"
+      className="relative flex min-h-[600px] items-center overflow-hidden pt-[clamp(4rem,9vw,6rem)] pb-[clamp(4rem,9vw,6rem)]"
+    >
+      <video
+        src="/videos/nos-vemos-alla.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-ink/40" />
+
+      <div className="relative z-10 mx-auto flex max-w-[720px] flex-col items-center gap-10 px-6 text-center sm:px-8">
         <div className="flex flex-col items-center gap-4">
           <Reveal>
-            <h2 className="h1-section text-ink">Nos vemos allá</h2>
+            <h2 className="h1-section text-cream">Nos vemos allá</h2>
           </Reveal>
           <Reveal delay={80}>
-            <p className="h3-section text-terracotta italic">
+            <p className="h3-section text-peach italic">
               Tres días para los dos. El resto puede esperar.
             </p>
           </Reveal>
@@ -26,16 +39,9 @@ export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
             Inscribirme ahora
           </a>
         </Reveal>
-
-        <Reveal delay={240} className="flex flex-col items-center gap-2 pt-6 text-ink">
-          <p className="text-sm">¿Dudas? Escríbenos directamente:</p>
-          <p className="text-base font-semibold">
-            WhatsApp {retreat.contacto.whatsapp} · {retreat.contacto.email}
-          </p>
-        </Reveal>
       </div>
 
-      <img src="/icons/closing-wave.svg" alt="" className="mt-10 h-[70px] w-full" />
+      <img src="/icons/closing-wave.svg" alt="" className="absolute inset-x-0 bottom-0 z-10 h-[70px] w-full" />
     </section>
   );
 }

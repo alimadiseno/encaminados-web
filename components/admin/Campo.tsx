@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, type ChangeEvent } from "react";
+import { comprimirImagen } from "@/lib/comprimir-imagen";
+
+function pesoLegible(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+}
 
 const claseInput =
   "w-full rounded-xl border-2 border-ink/15 bg-cream px-4 py-2.5 text-base text-ink outline-none focus-visible:border-terracotta";
@@ -113,14 +118,42 @@ export function CampoArchivo({
 }) {
   const [nombreElegido, setNombreElegido] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [infoPeso, setInfoPeso] = useState<string | null>(null);
+  const [comprimiendo, setComprimiendo] = useState(false);
   const urlAMostrar = previewUrl ?? urlActual;
 
-  function alElegirArchivo(e: ChangeEvent<HTMLInputElement>) {
-    const archivo = e.target.files?.[0];
-    setNombreElegido(archivo?.name ?? null);
+  async function alElegirArchivo(e: ChangeEvent<HTMLInputElement>) {
+    const elInput = e.target;
+    const archivoOriginal = elInput.files?.[0];
+    if (!archivoOriginal) {
+      setNombreElegido(null);
+      setInfoPeso(null);
+      setPreviewUrl((anterior) => {
+        if (anterior) URL.revokeObjectURL(anterior);
+        return null;
+      });
+      return;
+    }
+
+    setComprimiendo(true);
+    const archivo = await comprimirImagen(archivoOriginal);
+    setComprimiendo(false);
+
+    if (archivo !== archivoOriginal) {
+      // El input quedó apuntando al archivo original elegido en el sistema — hay
+      // que reemplazarlo por el comprimido para que sea eso lo que viaja al subir.
+      const dt = new DataTransfer();
+      dt.items.add(archivo);
+      elInput.files = dt.files;
+      setInfoPeso(`${pesoLegible(archivoOriginal.size)} → ${pesoLegible(archivo.size)}`);
+    } else {
+      setInfoPeso(null);
+    }
+
+    setNombreElegido(archivo.name);
     setPreviewUrl((anterior) => {
       if (anterior) URL.revokeObjectURL(anterior);
-      return archivo ? URL.createObjectURL(archivo) : null;
+      return URL.createObjectURL(archivo);
     });
   }
 
@@ -141,7 +174,9 @@ export function CampoArchivo({
           <input type="file" name={name} accept="image/*" onChange={alElegirArchivo} className="sr-only" />
         </label>
       </div>
-      {nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}
+      {comprimiendo && <p className="text-xs text-ink/50">Comprimiendo…</p>}
+      {!comprimiendo && nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}
+      {!comprimiendo && infoPeso && <p className="text-xs text-ink/50">Comprimida: {infoPeso}</p>}
       {ayuda && <p className="text-xs text-ink/50">Tamaño recomendado: {ayuda}</p>}
     </div>
   );

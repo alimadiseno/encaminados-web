@@ -55,6 +55,29 @@
   line-height: 1.2;
 }
 
+/* ============================================================
+   Filter chip — filtros de fecha/estado en los exports y en las
+   tablas del panel admin (BotonesFiltroFecha, BotonesFecha,
+   SeleccionFechas en InscritosView.tsx). Solo trae la forma común
+   (borde, radio, padding, tipografía); el color de fondo/texto va
+   aparte según estado:
+     activo  → bg-icon-bg text-ink
+     inactivo → bg-transparent text-terracotta hover:bg-icon-bg hover:text-ink
+   ============================================================ */
+@utility filter-chip {
+  border-radius: 0.5rem; /* 8px */
+  border-width: 1px;
+  border-color: var(--color-terracotta);
+  padding-inline: 1rem; /* 16px */
+  padding-block: 0.25rem; /* 4px */
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em; /* 5% */
+  transition-property: color, background-color, border-color;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: 150ms;
+}
+
 html {
   scroll-behavior: smooth;
 }
