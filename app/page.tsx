@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getFeaturedRetreat, fechasLabel } from "@/data/retreats";
+import EventStructuredData from "@/components/EventStructuredData";
 import Reveal from "@/components/Reveal";
 import WaveBanner from "@/components/WaveBanner";
 import Header from "@/components/Header";
@@ -63,6 +64,8 @@ export default async function Home() {
 
   return (
     <>
+      <EventStructuredData retreat={retreat} />
+
       <a
         href="#jornada"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-cream focus:px-4 focus:py-2 focus:text-ink"
