@@ -61,7 +61,11 @@ Todos estos endpoints exigen sesión válida de `/admin` (misma cookie que el pa
 
 ## Analítica / tracking
 
-No hay Google Analytics, Meta Pixel, ni ninguna herramienta de analítica o tracking instalada en el código a la fecha de este documento. Si se quiere medir tráfico o conversión del CTA "Inscribirme", hay que agregarlo — no existe hoy.
+**Google Analytics 4** instalado (`app/layout.tsx`, tag `gtag.js` cargado con `next/script`, Measurement ID `G-ZYD7158NSK` hardcodeado como constante). Corre en todas las páginas, incluidas `/admin` y `/guias` — no se excluyó el panel interno del tracking, así que las visitas del propio equipo también quedan contabilizadas ahí.
+
+La propiedad de GA4 está a nombre del cliente (Regnum Christi Chile), no de Alima — Alima solo tiene acceso de **Editor** sobre ella. Si se pierde el acceso, hay que pedirle al cliente que agregue de nuevo a `hola@alima.cl` en **Admin → Administración de acceso a la propiedad**.
+
+No hay Meta Pixel ni otra herramienta de tracking instalada.
 
 ## SEO
 
