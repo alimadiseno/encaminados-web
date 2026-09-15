@@ -11,11 +11,30 @@
 | Que la carpeta de Google Drive de `/guias` siga compartida como "Cualquiera con el enlace" | Cuando el cliente reporte error de acceso en `/guias` | Es la causa más probable si guías/monitores ven "acceso denegado" ahí adentro |
 | Vigencia de las claves de `/admin` y `/guias` | Si hay cambio de equipo organizador | Revocar acceso a quien ya no debería tenerlo (ver [05-panel-de-administracion.md](05-panel-de-administracion.md)) |
 
+## Cuándo hacer backup (por hito, no por calendario)
+
+### Datos (Supabase)
+
+El plan gratuito de Supabase normalmente no incluye backups automáticos (confirmar en el dashboard) — sin un backup manual, hoy no hay ninguna red de respaldo para estos datos. Ojo además: `estado_pago`, `monto`, `metodo_pago` y `notas` de `inscritos` **solo existen en Supabase** — el resto de las respuestas del formulario también queda en la Google Sheet del cliente (respaldo natural), pero ese trabajo de seguimiento de pagos que se hace a mano en `/admin` no.
+
+En vez de una frecuencia fija, hacerlo en estos dos momentos:
+- **Al cerrar un proceso de inscripción** — correr `node scripts/backup-supabase.mjs` y además descargar el Excel "Completo para admin" desde `/admin` → Inscritos → Exportar datos (es el archivo histórico legible; el JSON del script es más bien la copia técnica cruda).
+- **Antes de abrir el siguiente proceso** (crear el próximo retiro en el panel) — en cuanto cambie el retiro destacado, los inscritos del ciclo anterior dejan de verse en `/admin` (siguen en la base, pero el panel deja de mostrarlos).
+
+Cómo correrlo: `node scripts/backup-supabase.mjs` desde la raíz del proyecto — lee las credenciales de `.env.local` (nunca hay que escribirlas a mano) y guarda todas las tablas en `/backups/<fecha>/`. Esa carpeta está en `.gitignore` a propósito — tiene datos personales reales de las familias inscritas y nunca debe subirse a git.
+
+### Código (Git)
+
+Cada push ya queda guardado para siempre en GitHub — eso ya es el backup, sin necesidad de nada extra. Cloudflare además conserva las versiones desplegadas anteriores en su propio panel (Workers & Pages → `encaminados-web` → Deployments).
+
+Un tag (`git tag`) no es una copia de seguridad, es un **marcador humano** para señalar un punto que importa — un lanzamiento, o justo antes de un cambio grande/riesgoso. Ponerle tag a cada ajuste chico de interfaz le quita valor a la señal; para cambios normales, los commits regulares (que ya pasan solos con cada push) alcanzan de sobra.
+
 ## Deuda técnica y decisiones conocidas (para no perder el porqué)
 
 - **El flujo de inscripción real difiere del brief original.** El brief menciona Supabase + Flow/Mercado Pago como checkout propio; lo que quedó implementado es Google Form + Apps Script + webhook, con pago y confirmación manual. Ver [04-integraciones-y-flujo-de-inscripcion.md](04-integraciones-y-flujo-de-inscripcion.md). Si en el futuro se quiere automatizar el pago, este es el punto de partida a reemplazar.
 - **Columnas sin uso en la base de datos, dejadas a propósito:** `retreat_guias.foto_url`/`foto_forma` y `retreat_videos.youtube_id`/`portada_url` — ver [02-base-de-datos.md](02-base-de-datos.md) para el contexto de por qué no se borraron.
 - **Solo existe un retiro a la vez.** El modelo de datos y el código (`getFeaturedRetreat()`) ya están pensados para soportar varios retiros en paralelo con una página `/eventos`, pero esa vista no se construyó — si el cliente empieza a hacer 2 versiones del retiro en fechas muy distintas con contenido distinto (no solo una fecha alternativa), vale la pena retomar esa idea.
+  - **Consecuencia concreta en `/admin`, pedida por Fernando (2026-09-15):** `getInscritos(retreat.id)` en `lib/inscritos.ts` solo trae los inscritos del retiro destacado — al crear el próximo retiro y cambiar `RETIRO_DESTACADO`, los inscritos del ciclo anterior siguen en la base pero el panel deja de mostrarlos. Se pidió poder seguir viendo/comparando inscritos de ciclos anteriores (evolución entre fechas). No hace falta la página pública `/eventos` completa para esto — alcanza con agregar un selector de retiro/ciclo en la vista Inscritos del panel (o traer inscritos de todos los retiros y filtrar ahí), bastante más acotado.
 - **Sin analítica instalada.** No hay Google Analytics ni ninguna herramienta de medición — si se quiere saber cuánta gente hace clic en "Inscribirme", hay que agregarlo.
 - **Sin `.env.example`.** El repo no tiene un archivo de ejemplo con los nombres de variables de entorno para gente nueva que clone el proyecto — solo están documentados acá y en `.env.local`/`.dev.vars` (no versionados). Considerar agregar un `.dev.vars.example` con los nombres (sin valores) si se suma más gente al proyecto.
 
