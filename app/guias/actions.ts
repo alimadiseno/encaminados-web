@@ -10,10 +10,10 @@ export interface LoginState {
 
 export async function loginGuias(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const password = String(formData.get("password") ?? "");
-  const ok = await iniciarSesion(password);
+  const resultado = await iniciarSesion(password);
 
-  if (!ok) {
-    return { error: "Clave incorrecta. Intenta de nuevo." };
+  if (!resultado.ok) {
+    return { error: resultado.error ?? "Clave incorrecta. Intenta de nuevo." };
   }
 
   revalidatePath("/guias");
