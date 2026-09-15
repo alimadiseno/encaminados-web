@@ -90,6 +90,25 @@ Por la limitación anterior, se agregó un segundo ping independiente en **[cron
 
 Si en algún momento se pierde el acceso a la cuenta de cron-job.org, hay que volver a crear el cron job ahí (o en un servicio equivalente) apuntando al mismo endpoint — no requiere ningún secreto ni autenticación, es un `GET` público.
 
+## Regla de Rate Limiting en Cloudflare (`/admin` y `/guias`)
+
+El login de `/admin` y `/guias` tiene un límite básico de intentos fallidos a nivel de aplicación (`lib/session-auth.ts`: 5 intentos fallidos bloquean 15 minutos, vía una cookie `httpOnly`). Eso frena a alguien probando claves a mano o con un script simple, pero **no protege contra un atacante que descarta la cookie en cada request** — el proyecto no tiene ningún binding de almacenamiento (KV/D1) para llevar un contador server-side de verdad, así que no había forma de hacer algo más fuerte solo con código.
+
+Para eso se configuró además una regla de **Rate Limiting** de Cloudflare (WAF) — limita por IP a nivel de red, sin depender de cookies.
+
+**Dónde está:** dashboard de Cloudflare → dominio `encaminados.cl` → **Security → WAF → Rate limiting rules**.
+
+**Cómo quedó configurada** — el plan gratuito de Cloudflare permite **una sola regla** de este tipo, y tanto el período de conteo como la duración del bloqueo vienen topados en 10 segundos (no hay ventanas más largas sin plan Pro). Por el límite de una sola regla, ambas rutas quedan cubiertas en la misma:
+
+```
+(http.request.uri.path eq "/admin" and http.request.method eq "POST") or (http.request.uri.path eq "/guias" and http.request.method eq "POST")
+```
+
+- **Requests:** 5 — **Period:** 10 segundos
+- **Action:** Block — **Duration:** 10 segundos
+
+**Limitación conocida:** con un bloqueo de solo 10 segundos, no frena a un atacante de forma prolongada, pero sí lo obliga a ir mucho más lento — ya no puede mandar ráfagas ilimitadas por segundo. Combinado con el límite de 15 minutos a nivel de aplicación, es una mejora real aunque más modesta de lo ideal. Si en algún momento el proyecto sube a un plan pago (Pro), vale la pena reconfigurar esta regla con una ventana más larga (ej. 15 minutos) y, si se prefiere, separar `/admin` y `/guias` en dos reglas independientes.
+
 ## Resumen de cuentas involucradas
 
 Para que quien retome el proyecto sepa dónde pedir accesos:
