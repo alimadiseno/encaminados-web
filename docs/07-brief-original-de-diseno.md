@@ -1,6 +1,8 @@
 # Encaminados — Brief de diseño y contenidos
 
-> Para diseñar la landing en Figma. Resume el objetivo del sitio, la estructura acordada, el contenido que va en cada sección (qué ya existe vs. qué falta pedirle al cliente) y las restricciones funcionales que el diseño debe respetar. No incluye lineamientos de color ni de estilo gráfico — eso se define directamente en Figma.
+> **Documento histórico** — es el brief con el que arrancó el proyecto, incluido acá como parte del handoff para dar contexto de las decisiones de contenido. Dos cosas cambiaron respecto a lo planteado originalmente: el diseño se terminó de afinar directo en código (Claude Code) en vez de en Figma (no existe un archivo de Figma final — ver [03-sistema-de-diseno.md](03-sistema-de-diseno.md)), y el flujo de inscripción/pago quedó resuelto con Google Form + webhook en vez de Supabase + Flow/Mercado Pago (ver [04-integraciones-y-flujo-de-inscripcion.md](04-integraciones-y-flujo-de-inscripcion.md)). El checklist de contenido pendiente del final de este documento puede estar desactualizado — confirmar el estado real en [06-mantenimiento-y-pendientes.md](06-mantenimiento-y-pendientes.md).
+
+> Texto original: para diseñar la landing en Figma. Resume el objetivo del sitio, la estructura acordada, el contenido que va en cada sección (qué ya existe vs. qué falta pedirle al cliente) y las restricciones funcionales que el diseño debe respetar. No incluye lineamientos de color ni de estilo gráfico — eso se definía originalmente en Figma.
 
 ---
 
