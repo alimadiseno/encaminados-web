@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Alegreya, Geist, Karla } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+/** Cuenta de Google Analytics del cliente (Regnum Christi Chile) — Alima solo tiene acceso de Editor. */
+const GA_MEASUREMENT_ID = "G-ZYD7158NSK";
 
 const alegreya = Alegreya({
   variable: "--font-display",
@@ -36,7 +40,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es-CL"
       className={`${alegreya.variable} ${geist.variable} ${karla.variable}`}
     >
-      <body className="bg-cream text-ink font-body antialiased">{children}</body>
+      <body className="bg-cream text-ink font-body antialiased">
+        {children}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
+      </body>
     </html>
   );
 }
