@@ -47,6 +47,16 @@ export async function actualizarInscrito(
   return {};
 }
 
+export async function eliminarInscrito(id: string): Promise<InscritoActionState> {
+  const supabase = await getSupabaseAdminClient();
+  const { error } = await supabase.from("inscritos").delete().eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return {};
+}
+
 export async function crearInscritoManual(
   _prevState: InscritoActionState,
   formData: FormData,

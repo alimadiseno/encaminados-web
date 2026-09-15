@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState, type ReactNode } from "react";
 import {
   actualizarInscrito,
   crearInscritoManual,
+  eliminarInscrito,
   type InscritoActionState,
 } from "@/app/admin/inscritos-actions";
 import type { DetalleExtra, EstadoPago, Inscrito } from "@/lib/inscritos";
@@ -376,6 +377,65 @@ function CamposPago({ inscrito, apilado }: { inscrito: Inscrito; apilado?: boole
   );
 }
 
+/**
+ * Botón de borrado definitivo — no hay papelera ni deshacer. Usa confirmación
+ * en línea (no `window.confirm`, que es un diálogo nativo fácil de pasar por
+ * alto o descartar sin querer, e inconsistente con el resto del panel, que ya
+ * usa UI propia en vez de diálogos del navegador). En éxito no hace falta
+ * tocar estado local: `revalidatePath("/admin")` en la acción refresca la
+ * lista de `inscritos` y este componente se desmonta solo con la fila/tarjeta.
+ */
+function BotonEliminar({ id }: { id: string }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function eliminar() {
+    setEliminando(true);
+    const resultado = await eliminarInscrito(id);
+    if (resultado.error) {
+      setError(resultado.error);
+      setEliminando(false);
+      setConfirmando(false);
+    }
+  }
+
+  if (confirmando) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="text-xs font-semibold text-rose-700">¿Eliminar? No se puede deshacer.</span>
+        <button
+          type="button"
+          onClick={eliminar}
+          disabled={eliminando}
+          className="text-xs font-bold text-rose-700 underline underline-offset-2 disabled:opacity-60"
+        >
+          {eliminando ? "Eliminando…" : "Sí, eliminar"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirmando(false)}
+          disabled={eliminando}
+          className="text-xs text-ink/60 underline underline-offset-2 disabled:opacity-60"
+        >
+          Cancelar
+        </button>
+        {error && <span className="text-xs font-semibold text-rose-700">{error}</span>}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirmando(true)}
+      className="text-xs font-semibold text-rose-700 underline underline-offset-2"
+    >
+      Eliminar inscrito
+    </button>
+  );
+}
+
 function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
   const [editando, setEditando] = useState(false);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
@@ -442,6 +502,7 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
           <button type="button" onClick={() => setEditando(false)} className="text-xs text-ink/60 underline underline-offset-2">
             Cancelar
           </button>
+          <BotonEliminar id={inscrito.id} />
           {state.error && <p className="w-full text-xs font-semibold text-rose-700">{state.error}</p>}
         </form>
       </td>
@@ -514,6 +575,7 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
             <button type="button" onClick={() => setEditando(false)} className="text-xs text-ink/60 underline underline-offset-2">
               Cancelar
             </button>
+            <BotonEliminar id={inscrito.id} />
           </div>
           {state.error && <p className="text-xs font-semibold text-rose-700">{state.error}</p>}
         </form>
