@@ -108,6 +108,7 @@ export function CampoArchivo({
   urlActual,
   name,
   ayuda,
+  ladoMaximo,
 }: {
   label: string;
   urlActual: string;
@@ -115,6 +116,15 @@ export function CampoArchivo({
   name: string;
   /** Tamaño recomendado u otra indicación breve, ej. "1920×1080 px". */
   ayuda?: string;
+  /**
+   * Lado más largo, en px, al que se redimensiona antes de subir — pásalo acorde al
+   * tamaño real con que se muestra la foto en el sitio (con margen para pantallas
+   * retina), no al tamaño recomendado de subida. Por defecto 1920, pensado para fotos
+   * a pantalla completa (hero); dejarlo así en fotos que se muestran chicas (miniaturas,
+   * franja decorativa) sube varias veces más peso del que se necesita — ver PageSpeed
+   * Insights, 2026-09-15.
+   */
+  ladoMaximo?: number;
 }) {
   const [nombreElegido, setNombreElegido] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -141,7 +151,7 @@ export function CampoArchivo({
     }
 
     setComprimiendo(true);
-    const archivo = await comprimirImagen(archivoOriginal);
+    const archivo = await comprimirImagen(archivoOriginal, ladoMaximo);
     setComprimiendo(false);
 
     if (archivo !== archivoOriginal) {

@@ -372,6 +372,10 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
                     urlActual={item.url}
                     name={keyArchivoDecorativa(item.clientId)}
                     ayuda="alto ≥600 px, cualquier ancho"
+                    // Se muestra fija a 180-280px de alto (PhotoStrip) — 1080 alcanza de sobra
+                    // hasta pantallas retina, y evita subir fotos de celular casi sin achicar
+                    // (ver PageSpeed Insights, 2026-09-15).
+                    ladoMaximo={1080}
                   />
                 )}
                 etiquetaAgregar="+ Agregar foto"

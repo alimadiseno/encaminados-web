@@ -12,7 +12,7 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
         src={retreat.heroImagenUrl}
         alt=""
         fill
-        priority
+        fetchPriority="high"
         sizes="100vw"
         className="object-cover"
       />

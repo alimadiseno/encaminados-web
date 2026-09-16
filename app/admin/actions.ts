@@ -61,7 +61,9 @@ async function subirImagenSiCorresponde(
 
   const { error } = await supabase.storage
     .from("site-images")
-    .upload(ruta, archivo, { contentType: archivo.type || undefined });
+    // `ruta` incluye Date.now(), así que cada subida es una URL nueva e inmutable —
+    // cachear un año no arriesga servir una foto vieja (ver PageSpeed Insights, 2026-09-15).
+    .upload(ruta, archivo, { contentType: archivo.type || undefined, cacheControl: "31536000" });
   if (error) throw new Error(`No se pudo subir la imagen (${key}): ${error.message}`);
 
   const { data } = supabase.storage.from("site-images").getPublicUrl(ruta);
