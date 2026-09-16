@@ -119,8 +119,12 @@ export function CampoArchivo({
   const [nombreElegido, setNombreElegido] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [infoPeso, setInfoPeso] = useState<string | null>(null);
+  const [advertenciaPeso, setAdvertenciaPeso] = useState<string | null>(null);
   const [comprimiendo, setComprimiendo] = useState(false);
   const urlAMostrar = previewUrl ?? urlActual;
+
+  /** Sobre este tamaño, subir el archivo tal cual (sin comprimir) pesa notoriamente en el sitio — ver PageSpeed Insights del 2026-09-15. */
+  const UMBRAL_ADVERTENCIA_BYTES = 2 * 1024 * 1024;
 
   async function alElegirArchivo(e: ChangeEvent<HTMLInputElement>) {
     const elInput = e.target;
@@ -128,6 +132,7 @@ export function CampoArchivo({
     if (!archivoOriginal) {
       setNombreElegido(null);
       setInfoPeso(null);
+      setAdvertenciaPeso(null);
       setPreviewUrl((anterior) => {
         if (anterior) URL.revokeObjectURL(anterior);
         return null;
@@ -146,8 +151,18 @@ export function CampoArchivo({
       dt.items.add(archivo);
       elInput.files = dt.files;
       setInfoPeso(`${pesoLegible(archivoOriginal.size)} → ${pesoLegible(archivo.size)}`);
+      setAdvertenciaPeso(null);
     } else {
       setInfoPeso(null);
+      // `comprimirImagen` deja el archivo tal cual cuando no logra comprimirlo
+      // (ej. no pudo decodificarlo — pasa con algunas fotos de cámara con
+      // perfil de color que el navegador no soporta) — antes esto pasaba
+      // inadvertido y el original se subía completo sin que nadie se diera cuenta.
+      setAdvertenciaPeso(
+        archivoOriginal.size > UMBRAL_ADVERTENCIA_BYTES
+          ? `No se pudo comprimir esta imagen automáticamente y pesa ${pesoLegible(archivoOriginal.size)} — se subirá así de pesada, lo que hace más lento el sitio. Si puedes, comprímela con otra herramienta antes de subirla.`
+          : null,
+      );
     }
 
     setNombreElegido(archivo.name);
@@ -177,6 +192,7 @@ export function CampoArchivo({
       {comprimiendo && <p className="text-xs text-ink/50">Comprimiendo…</p>}
       {!comprimiendo && nombreElegido && <p className="text-xs text-terracotta">Se reemplazará por: {nombreElegido}</p>}
       {!comprimiendo && infoPeso && <p className="text-xs text-ink/50">Comprimida: {infoPeso}</p>}
+      {!comprimiendo && advertenciaPeso && <p className="text-xs font-semibold text-rose-700">⚠ {advertenciaPeso}</p>}
       {ayuda && <p className="text-xs text-ink/50">Tamaño recomendado: {ayuda}</p>}
     </div>
   );
