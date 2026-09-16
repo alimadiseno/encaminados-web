@@ -119,4 +119,4 @@ Para que quien retome el proyecto sepa dónde pedir accesos:
 | GitHub | Repositorio `alimadiseno/encaminados-web`, Actions (keep-alive) | Alima Diseño |
 | Supabase | Base de datos y storage | Alima Diseño (y potencialmente el cliente, si se le da acceso de solo lectura al dashboard) |
 | cron-job.org | Ping de respaldo a `/api/ping` para que Supabase no se pause (ver más abajo) | `hola@alima.cl` (Alima Diseño) |
-| Registrador del dominio `encaminados.cl` | Renovación del dominio | A confirmar con el cliente — no está documentado en el código quién es el registrador |
+| Registrador del dominio `encaminados.cl` | Renovación del dominio | **NIC.cl** — el dominio lo compró y lo administra el cliente (Regnum Christi Chile) directamente, no Alima. La renovación es responsabilidad de ellos; Alima no tiene acceso a esa cuenta ni gestiona el pago. |
