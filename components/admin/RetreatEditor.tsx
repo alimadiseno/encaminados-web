@@ -136,7 +136,15 @@ function claseTabSeccion(activo: boolean): string {
 
 const estadoInicialGuardado: GuardarState = {};
 
-export default function RetreatEditor({ retreat, inscritos }: { retreat: RetreatEvent; inscritos: Inscrito[] }) {
+export default function RetreatEditor({
+  retreat,
+  inscritos,
+  inscritosArchivados,
+}: {
+  retreat: RetreatEvent;
+  inscritos: Inscrito[];
+  inscritosArchivados: Inscrito[];
+}) {
   const [datos, setDatos] = useState<DatosFormularioAdmin>(() => aEditable(retreat));
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
   const [vista, setVista] = useState<Vista>("contenido");
@@ -238,7 +246,12 @@ export default function RetreatEditor({ retreat, inscritos }: { retreat: Retreat
 
         <div className="min-w-0 flex-1 bg-almost-white px-6 py-10 sm:px-10">
           {vista === "inscritos" && (
-            <InscritosView inscritos={inscritos} fechas={retreat.fechas.map((f) => f.label)} retreatId={retreat.id} />
+            <InscritosView
+              inscritos={inscritos}
+              inscritosArchivados={inscritosArchivados}
+              fechas={retreat.fechas.map((f) => f.label)}
+              retreatId={retreat.id}
+            />
           )}
 
           <form

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { haySesionValida } from "@/lib/admin-auth";
 import { getRetreatBySlug, RETIRO_DESTACADO } from "@/data/retreats";
-import { getInscritos } from "@/lib/inscritos";
+import { getInscritos, getInscritosArchivados } from "@/lib/inscritos";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
 import RetreatEditor from "@/components/admin/RetreatEditor";
 
@@ -27,7 +27,10 @@ export default async function AdminPage() {
     );
   }
 
-  const inscritos = await getInscritos(retreat.id);
+  const [inscritos, inscritosArchivados] = await Promise.all([
+    getInscritos(retreat.id),
+    getInscritosArchivados(retreat.id),
+  ]);
 
-  return <RetreatEditor retreat={retreat} inscritos={inscritos} />;
+  return <RetreatEditor retreat={retreat} inscritos={inscritos} inscritosArchivados={inscritosArchivados} />;
 }

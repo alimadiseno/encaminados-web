@@ -3,8 +3,9 @@
 import { useActionState, useMemo, useState, type ReactNode } from "react";
 import {
   actualizarInscrito,
+  archivarInscrito,
   crearInscritoManual,
-  eliminarInscrito,
+  restaurarInscrito,
   type InscritoActionState,
 } from "@/app/admin/inscritos-actions";
 import type { EstadoPago, Inscrito } from "@/lib/inscritos";
@@ -373,24 +374,28 @@ function CamposPago({ inscrito, apilado }: { inscrito: Inscrito; apilado?: boole
 }
 
 /**
- * Botón de borrado definitivo — no hay papelera ni deshacer. Usa confirmación
- * en línea (no `window.confirm`, que es un diálogo nativo fácil de pasar por
- * alto o descartar sin querer, e inconsistente con el resto del panel, que ya
- * usa UI propia en vez de diálogos del navegador). En éxito no hace falta
- * tocar estado local: `revalidatePath("/admin")` en la acción refresca la
- * lista de `inscritos` y este componente se desmonta solo con la fila/tarjeta.
+ * Botón de borrado blando — para quien organiza esto es "eliminar la
+ * inscripción" (desinscribir a la pareja), por eso el texto visible dice
+ * eso, aunque por dentro no hace DELETE: solo marca `archivado_en` (ver
+ * archivarInscrito) y queda recuperable desde "Archivados". Usa
+ * confirmación en línea (no `window.confirm`, que es un diálogo nativo
+ * fácil de pasar por alto o descartar sin querer, e inconsistente con el
+ * resto del panel, que ya usa UI propia en vez de diálogos del navegador).
+ * En éxito no hace falta tocar estado local: `revalidatePath("/admin")` en
+ * la acción refresca la lista de `inscritos` y este componente se
+ * desmonta solo con la fila/tarjeta.
  */
-function BotonEliminar({ id }: { id: string }) {
+function BotonArchivar({ id }: { id: string }) {
   const [confirmando, setConfirmando] = useState(false);
-  const [eliminando, setEliminando] = useState(false);
+  const [archivando, setArchivando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function eliminar() {
-    setEliminando(true);
-    const resultado = await eliminarInscrito(id);
+  async function archivar() {
+    setArchivando(true);
+    const resultado = await archivarInscrito(id);
     if (resultado.error) {
       setError(resultado.error);
-      setEliminando(false);
+      setArchivando(false);
       setConfirmando(false);
     }
   }
@@ -398,19 +403,19 @@ function BotonEliminar({ id }: { id: string }) {
   if (confirmando) {
     return (
       <span className="inline-flex items-center gap-2">
-        <span className="text-xs font-semibold text-rose-700">¿Eliminar? No se puede deshacer.</span>
+        <span className="text-xs font-semibold text-rose-700">¿Eliminar inscripción? Se puede restaurar después.</span>
         <button
           type="button"
-          onClick={eliminar}
-          disabled={eliminando}
+          onClick={archivar}
+          disabled={archivando}
           className="text-xs font-bold text-rose-700 underline underline-offset-2 disabled:opacity-60"
         >
-          {eliminando ? "Eliminando…" : "Sí, eliminar"}
+          {archivando ? "Eliminando…" : "Sí, eliminar"}
         </button>
         <button
           type="button"
           onClick={() => setConfirmando(false)}
-          disabled={eliminando}
+          disabled={archivando}
           className="text-xs text-ink/60 underline underline-offset-2 disabled:opacity-60"
         >
           Cancelar
@@ -426,8 +431,89 @@ function BotonEliminar({ id }: { id: string }) {
       onClick={() => setConfirmando(true)}
       className="text-xs font-semibold text-rose-700 underline underline-offset-2"
     >
-      Eliminar inscrito
+      Eliminar inscripción
     </button>
+  );
+}
+
+/** Fila de la lista de archivados — datos básicos, cuándo se archivó, y el botón para traerlo de vuelta. */
+function FilaArchivado({ inscrito }: { inscrito: Inscrito }) {
+  const [restaurando, setRestaurando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function restaurar() {
+    setRestaurando(true);
+    const resultado = await restaurarInscrito(inscrito.id);
+    if (resultado.error) {
+      setError(resultado.error);
+      setRestaurando(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 py-3 last:border-0">
+      <div className="flex flex-col">
+        <span className="font-semibold text-ink">{apellidosPareja(inscrito)}</span>
+        <span className="text-xs text-ink/60">
+          {inscrito.nombreEsposa} y {inscrito.nombreMarido} · {inscrito.fechaElegida}
+        </span>
+        {inscrito.archivadoEn && (
+          <span className="text-xs text-ink/50">Eliminado el {formatearFecha(inscrito.archivadoEn)}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        {error && <span className="text-xs font-semibold text-rose-700">{error}</span>}
+        <button
+          type="button"
+          onClick={restaurar}
+          disabled={restaurando}
+          className="text-xs font-semibold text-terracotta underline underline-offset-2 disabled:opacity-60"
+        >
+          {restaurando ? "Restaurando…" : "Restaurar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Modal con la lista de inscritos archivados — mismo patrón que BotonExportacion (botón + overlay), para no ocupar espacio cuando no se usa. */
+function BotonArchivados({ inscritosArchivados }: { inscritosArchivados: Inscrito[] }) {
+  const [abierto, setAbierto] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setAbierto(true)} className="btn-outline self-start py-2">
+        Ver inscritos eliminados {inscritosArchivados.length > 0 && `(${inscritosArchivados.length})`}
+      </button>
+
+      {abierto && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setAbierto(false)} />
+          <div className="relative flex max-h-[85vh] w-full max-w-2xl flex-col gap-4 overflow-y-auto rounded-2xl bg-card p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="h2-section text-ink">Inscritos eliminados</h2>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                aria-label="Cerrar"
+                className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-xl leading-none text-ink hover:bg-sage/50"
+              >
+                ×
+              </button>
+            </div>
+            {inscritosArchivados.length === 0 ? (
+              <p className="text-sm text-ink/50">No hay inscritos eliminados.</p>
+            ) : (
+              <div className="flex flex-col">
+                {inscritosArchivados.map((i) => (
+                  <FilaArchivado key={i.id} inscrito={i} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -497,7 +583,7 @@ function FilaInscrito({ inscrito }: { inscrito: Inscrito }) {
           <button type="button" onClick={() => setEditando(false)} className="text-xs text-ink/60 underline underline-offset-2">
             Cancelar
           </button>
-          <BotonEliminar id={inscrito.id} />
+          <BotonArchivar id={inscrito.id} />
           {state.error && <p className="w-full text-xs font-semibold text-rose-700">{state.error}</p>}
         </form>
       </td>
@@ -570,7 +656,7 @@ function TarjetaInscrito({ inscrito }: { inscrito: Inscrito }) {
             <button type="button" onClick={() => setEditando(false)} className="text-xs text-ink/60 underline underline-offset-2">
               Cancelar
             </button>
-            <BotonEliminar id={inscrito.id} />
+            <BotonArchivar id={inscrito.id} />
           </div>
           {state.error && <p className="text-xs font-semibold text-rose-700">{state.error}</p>}
         </form>
@@ -848,10 +934,12 @@ function FormularioNuevoInscrito({ fechas }: { fechas: string[] }) {
 
 export default function InscritosView({
   inscritos,
+  inscritosArchivados,
   fechas,
   retreatId,
 }: {
   inscritos: Inscrito[];
+  inscritosArchivados: Inscrito[];
   fechas: string[];
   retreatId: string;
 }) {
@@ -1070,7 +1158,10 @@ export default function InscritosView({
           </div>
         )}
 
-        <FormularioNuevoInscrito fechas={fechas} />
+        <div className="flex flex-wrap gap-3">
+          <FormularioNuevoInscrito fechas={fechas} />
+          <BotonArchivados inscritosArchivados={inscritosArchivados} />
+        </div>
     </div>
   );
 }

@@ -47,9 +47,24 @@ export async function actualizarInscrito(
   return {};
 }
 
-export async function eliminarInscrito(id: string): Promise<InscritoActionState> {
+/**
+ * Borrado blando: marca `archivado_en` en vez de hacer DELETE. La fila
+ * desaparece de la lista principal y de los exports (getInscritos filtra
+ * archivados), pero queda recuperable desde la vista de "Archivados".
+ */
+export async function archivarInscrito(id: string): Promise<InscritoActionState> {
   const supabase = await getSupabaseAdminClient();
-  const { error } = await supabase.from("inscritos").delete().eq("id", id);
+  const { error } = await supabase.from("inscritos").update({ archivado_en: new Date().toISOString() }).eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return {};
+}
+
+export async function restaurarInscrito(id: string): Promise<InscritoActionState> {
+  const supabase = await getSupabaseAdminClient();
+  const { error } = await supabase.from("inscritos").update({ archivado_en: null }).eq("id", id);
 
   if (error) return { error: error.message };
 

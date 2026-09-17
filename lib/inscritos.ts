@@ -30,6 +30,7 @@ export interface Inscrito {
   comprobanteUrl: string | null;
   detalleExtra: DetalleExtra | null;
   creadoEn: string;
+  archivadoEn: string | null;
 }
 
 interface FilaInscrito {
@@ -48,26 +49,14 @@ interface FilaInscrito {
   comprobante_url: string | null;
   detalle_extra: DetalleExtra | null;
   creado_en: string;
+  archivado_en: string | null;
 }
 
-/** Usa la service_role key: `inscritos` no tiene policy de lectura para "anon" a propósito. */
-export async function getInscritos(retreatId: string): Promise<Inscrito[]> {
-  const supabase = await getSupabaseAdminClient();
+const COLUMNAS_INSCRITO =
+  "id, fecha_elegida, nombre_esposa, telefono_esposa, email_esposa, nombre_marido, telefono_marido, email_marido, estado_pago, monto, metodo_pago, notas, comprobante_url, detalle_extra, creado_en, archivado_en";
 
-  const { data, error } = await supabase
-    .from("inscritos")
-    .select(
-      "id, fecha_elegida, nombre_esposa, telefono_esposa, email_esposa, nombre_marido, telefono_marido, email_marido, estado_pago, monto, metodo_pago, notas, comprobante_url, detalle_extra, creado_en",
-    )
-    .eq("retreat_id", retreatId)
-    .order("creado_en", { ascending: false });
-
-  if (error) {
-    console.error("Error cargando inscritos:", error.message);
-    return [];
-  }
-
-  return (data as FilaInscrito[]).map((f) => ({
+function mapearInscrito(f: FilaInscrito): Inscrito {
+  return {
     id: f.id,
     fechaElegida: f.fecha_elegida,
     nombreEsposa: f.nombre_esposa,
@@ -83,5 +72,44 @@ export async function getInscritos(retreatId: string): Promise<Inscrito[]> {
     comprobanteUrl: f.comprobante_url,
     detalleExtra: f.detalle_extra,
     creadoEn: f.creado_en,
-  }));
+    archivadoEn: f.archivado_en,
+  };
+}
+
+/** Usa la service_role key: `inscritos` no tiene policy de lectura para "anon" a propósito. */
+export async function getInscritos(retreatId: string): Promise<Inscrito[]> {
+  const supabase = await getSupabaseAdminClient();
+
+  const { data, error } = await supabase
+    .from("inscritos")
+    .select(COLUMNAS_INSCRITO)
+    .eq("retreat_id", retreatId)
+    .is("archivado_en", null)
+    .order("creado_en", { ascending: false });
+
+  if (error) {
+    console.error("Error cargando inscritos:", error.message);
+    return [];
+  }
+
+  return (data as FilaInscrito[]).map(mapearInscrito);
+}
+
+/** Inscritos archivados (borrado blando) — para la vista de "Archivados" del panel, no aparecen en getInscritos ni en los exports. */
+export async function getInscritosArchivados(retreatId: string): Promise<Inscrito[]> {
+  const supabase = await getSupabaseAdminClient();
+
+  const { data, error } = await supabase
+    .from("inscritos")
+    .select(COLUMNAS_INSCRITO)
+    .eq("retreat_id", retreatId)
+    .not("archivado_en", "is", null)
+    .order("archivado_en", { ascending: false });
+
+  if (error) {
+    console.error("Error cargando inscritos archivados:", error.message);
+    return [];
+  }
+
+  return (data as FilaInscrito[]).map(mapearInscrito);
 }
