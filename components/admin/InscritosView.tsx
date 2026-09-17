@@ -7,12 +7,12 @@ import {
   eliminarInscrito,
   type InscritoActionState,
 } from "@/app/admin/inscritos-actions";
-import type { DetalleExtra, EstadoPago, Inscrito } from "@/lib/inscritos";
+import type { EstadoPago, Inscrito } from "@/lib/inscritos";
 import {
-  ETIQUETA_DETALLE,
   ETIQUETA_ESTADO_PAGO,
   apellido,
   apellidosPareja,
+  camposDetalle,
   coincideFecha,
   esRespuestaAfirmativa,
   esRespuestaNegativa,
@@ -279,12 +279,7 @@ function Persona({ nombre, telefono, email }: { nombre: string; telefono: string
 }
 
 function ContenidoDetalle({ inscrito }: { inscrito: Inscrito }) {
-  const detalle = inscrito.detalleExtra;
-  const entradasDetalle = detalle
-    ? (Object.keys(ETIQUETA_DETALLE) as (keyof DetalleExtra)[])
-        .map((clave) => [ETIQUETA_DETALLE[clave], detalle[clave]] as const)
-        .filter((entrada): entrada is [string, string] => Boolean(entrada[1] && entrada[1].trim()))
-    : [];
+  const entradasDetalle = camposDetalle(inscrito.detalleExtra);
   const entradas: [string, string][] = [
     ["Inscrito el", formatearFecha(inscrito.creadoEn)],
     ...(inscrito.metodoPago ? [["Método de pago", inscrito.metodoPago] as [string, string]] : []),

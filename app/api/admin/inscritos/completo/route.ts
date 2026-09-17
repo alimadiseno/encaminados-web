@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { haySesionValida } from "@/lib/admin-auth";
 import { getInscritos, type EstadoPago } from "@/lib/inscritos";
-import { ETIQUETA_ESTADO_PAGO, apellidosPareja, coincideFecha, formatearFecha } from "@/lib/inscritos-formato";
+import { ETIQUETA_ESTADO_PAGO, apellidosPareja, coincideFecha, formatearFecha, formatearFechaMatrimonio } from "@/lib/inscritos-formato";
 import { renderCompletoAdminXlsx, type FilaCompleta } from "@/lib/excel/completo-admin";
 
 const ESTADOS_VALIDOS: EstadoPago[] = ["pendiente", "parcial", "pagado"];
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     monto: inscrito.monto,
     metodoPago: inscrito.metodoPago ?? "",
     notas: inscrito.notas ?? "",
-    fechaMatrimonio: inscrito.detalleExtra?.fechaMatrimonio ?? "",
+    fechaMatrimonio: inscrito.detalleExtra?.fechaMatrimonio ? formatearFechaMatrimonio(inscrito.detalleExtra.fechaMatrimonio) : "",
     colegioRC: inscrito.detalleExtra?.colegioRC ?? "",
     alergias: inscrito.detalleExtra?.alergias ?? "",
     motivacion: inscrito.detalleExtra?.motivacion ?? "",

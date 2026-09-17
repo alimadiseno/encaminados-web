@@ -17,6 +17,49 @@ export const ETIQUETA_DETALLE: Record<keyof DetalleExtra, string> = {
   comentarios: "Comentarios",
 };
 
+const MESES_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * `fechaMatrimonio` es texto libre del formulario — la mayoría de las respuestas
+ * (revisado 2026-09-17, 24 de 28) llegaron como el toString() nativo de un objeto
+ * Date de JavaScript (ej. "Sat Dec 05 2009 00:00:00 GMT-0300 (Chile Summer Time)"),
+ * probablemente por cómo Google Sheets/Apps Script interpretó la celda antes de
+ * mandarla al webhook, mientras el resto ya llegó como texto "DD/MM/AAAA". Se
+ * homologan ambos casos a "DD/MM/AAAA" leyendo los números directo del string (sin
+ * pasar por `new Date()`, que arriesgaría correr la fecha un día por huso horario).
+ * Cualquier otro texto se deja tal cual — incluido al menos un registro real con un
+ * año corrupto ("0096"): no es trabajo de esta función adivinar el dato real,
+ * solo darle un formato consistente al que ya viene reconocible.
+ */
+export function formatearFechaMatrimonio(valor: string): string {
+  const comoTextoDate = valor.match(/^\w{3} (\w{3}) (\d{1,2}) (\d{1,4})/);
+  if (comoTextoDate) {
+    const [, mesTexto, dia, anio] = comoTextoDate;
+    const mes = MESES_EN.indexOf(mesTexto);
+    if (mes !== -1) return `${dia.padStart(2, "0")}/${String(mes + 1).padStart(2, "0")}/${anio.padStart(4, "0")}`;
+  }
+
+  const comoDDMMAAAA = valor.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (comoDDMMAAAA) {
+    const [, dia, mes, anio] = comoDDMMAAAA;
+    return `${dia.padStart(2, "0")}/${mes.padStart(2, "0")}/${anio}`;
+  }
+
+  return valor;
+}
+
+/** Los campos de `detalleExtra` como pares [etiqueta, valor] listos para mostrar, filtrando los vacíos — usado tanto en /admin como en las fichas para monitores. */
+export function camposDetalle(detalle: DetalleExtra | null): [string, string][] {
+  if (!detalle) return [];
+  return (Object.keys(ETIQUETA_DETALLE) as (keyof DetalleExtra)[])
+    .map((clave) => {
+      const valor = detalle[clave];
+      const valorMostrado = clave === "fechaMatrimonio" && valor ? formatearFechaMatrimonio(valor) : valor;
+      return [ETIQUETA_DETALLE[clave], valorMostrado] as const;
+    })
+    .filter((entrada): entrada is [string, string] => Boolean(entrada[1] && entrada[1].trim()));
+}
+
 const CONECTORES_APELLIDO = new Set(["de", "del", "la", "los", "las"]);
 
 /**
