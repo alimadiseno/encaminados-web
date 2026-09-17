@@ -41,7 +41,7 @@ export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
       id="inscripcion"
       className="relative flex min-h-[600px] items-center overflow-hidden pt-[clamp(4rem,9vw,6rem)] pb-[clamp(4rem,9vw,6rem)]"
     >
-      {cargarVideo && (
+      {cargarVideo ? (
         <video
           src="/videos/nos-vemos-alla.mp4"
           autoPlay
@@ -50,8 +50,12 @@ export default function ClosingSection({ retreat }: { retreat: RetreatEvent }) {
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
         />
+      ) : (
+        // Antes de que el IntersectionObserver dispare la carga, un fondo sólido
+        // en vez del flash de nada — tiene que desaparecer apenas monta el video,
+        // si no queda tapándolo para siempre (bug encontrado 2026-09-17).
+        <div className="absolute inset-0 bg-ink" />
       )}
-      <div className="absolute inset-0 bg-ink" />
       <div className="absolute inset-0 bg-ink/40" />
 
       <div className="relative z-10 mx-auto flex max-w-[720px] flex-col items-center gap-10 px-6 text-center sm:px-8">
