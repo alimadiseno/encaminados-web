@@ -31,7 +31,7 @@ Diseño y desarrollo: **Alima Diseño** ([alima.cl](https://alima.cl)) — créd
 - **Base de datos:** Supabase (Postgres + Storage), plan gratuito.
 - **Autenticación de paneles internos:** sesión propia por cookie + clave compartida (sin proveedor externo de auth — ver [05-panel-de-administracion.md](05-panel-de-administracion.md)).
 - **Inscripciones:** Google Form externo → Google Apps Script → webhook propio → tabla `inscritos` en Supabase (ver [04-integraciones-y-flujo-de-inscripcion.md](04-integraciones-y-flujo-de-inscripcion.md)). No hay pasarela de pago integrada en el sitio.
-- **Generación de reportes:** Excel (`exceljs`) y PDF (`@react-pdf/renderer`) para el equipo organizador, generados desde el panel admin.
+- **Generación de reportes:** Excel (`exceljs`) y PDF (`pdfkit` directo, sin `@react-pdf/renderer` — ver nota en [06-mantenimiento-y-pendientes.md](06-mantenimiento-y-pendientes.md)) para el equipo organizador, generados desde el panel admin.
 
 ## Estructura del código (carpetas principales)
 

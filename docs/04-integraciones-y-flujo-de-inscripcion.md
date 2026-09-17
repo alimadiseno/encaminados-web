@@ -54,7 +54,7 @@ Desde `/admin` → pestaña **Inscritos**, el equipo organizador puede descargar
 |---|---|---|---|
 | Excel completo | `.xlsx` (`exceljs`) | `GET /api/admin/inscritos/completo` | Todas las columnas, incluye pagos y notas internas |
 | Contactos para Mailchimp | `.xlsx` | `GET /api/admin/inscritos/contactos` | Una fila por persona (no por pareja), pensado para importar a Mailchimp u otra plataforma de email |
-| Fichas de pareja para monitores | `.pdf` (`@react-pdf/renderer`) | `GET /api/admin/inscritos/fichas` | Una ficha por pareja, para el equipo de monitores durante el retiro |
+| Fichas de pareja para monitores | `.pdf` (`pdfkit` directo) | `GET /api/admin/inscritos/fichas` | Una ficha por pareja, para el equipo de monitores durante el retiro |
 | Alergias/restricciones para cocina | `.pdf` | `GET /api/admin/inscritos/alergias` | Filtra solo respuestas afirmativas de alergias, agrupado por fecha de sesión |
 
 Todos estos endpoints exigen sesión válida de `/admin` (misma cookie que el panel).
