@@ -6,7 +6,10 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
   return (
     <section
       id="top"
-      className="sticky top-0 z-0 flex min-h-[600px] flex-col items-center justify-center overflow-hidden pt-28 pb-16 lg:min-h-[750px] lg:pb-10"
+      // Con aviso, el header fijo crece: se suma su alto para que no tape el título.
+      className={`sticky top-0 z-0 flex min-h-[600px] flex-col items-center justify-center overflow-hidden pb-16 lg:min-h-[750px] lg:pb-10 ${
+        retreat.avisoTexto ? "pt-44 sm:pt-36" : "pt-28"
+      }`}
     >
       <Image
         src={retreat.heroImagenUrl}

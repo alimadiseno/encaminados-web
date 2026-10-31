@@ -68,6 +68,8 @@ export interface RetreatEvent {
   inscripcionUrl: string;
   contacto: Contacto;
   ideas: Idea[];
+  /** Franja de aviso sobre el header (ej. cupos agotados); vacío = no se muestra. */
+  avisoTexto: string;
   /** Frase de la cinta ondulada animada entre "Qué es Encaminados" y los testimonios. */
   cintaTexto: string;
   /** Segundos que tarda la cinta en dar una vuelta completa — menos es más rápido. */

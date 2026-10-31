@@ -40,6 +40,17 @@ export default function Header({ retreat }: { retreat: RetreatEvent }) {
         scrolled ? "bg-cream/90 shadow-[0_1px_0_rgba(0,0,0,.07)]" : "bg-transparent"
       }`}
     >
+      {retreat.avisoTexto && (
+        <a
+          href={retreat.inscripcionUrl}
+          target="_blank"
+          rel="noopener"
+          className="block bg-terracotta px-6 py-2 text-center text-xs font-semibold sm:text-sm text-cream no-underline hover:underline"
+        >
+          {retreat.avisoTexto}
+        </a>
+      )}
+
       <div className="mx-auto flex max-w-[1440px] items-center gap-6 px-6 py-5 sm:px-10 lg:px-24">
         <a href="#top" className="mr-auto text-terracotta no-underline">
           <Logo />

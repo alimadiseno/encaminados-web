@@ -52,6 +52,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     contacto: { ...retreat.contacto },
     fechas: retreat.fechas.map((f, i) => ({ clientId: `fecha-${i}`, label: f.label, start: f.start, end: f.end })),
     ideas: retreat.ideas.map((idea, i) => ({ clientId: `idea-${i}`, titulo: idea.titulo, descripcion: idea.descripcion })),
+    avisoTexto: retreat.avisoTexto,
     cintaTexto: retreat.cintaTexto,
     cintaVelocidadSegundos: String(retreat.cintaVelocidadSegundos),
     testimonios: retreat.testimonios.map((t) => ({
@@ -282,6 +283,11 @@ export default function RetreatEditor({
           <div className={claseSeccion("hero")}>
             <section className="flex flex-col gap-4">
               <h2 className="h2-section text-ink">Hero</h2>
+              <CampoTexto
+                label="Aviso superior (franja sobre el menú; dejar vacío para ocultarla)"
+                value={datos.avisoTexto}
+                onChange={(v) => set("avisoTexto", v)}
+              />
               <CampoTextarea label="Texto del hero (subtítulo)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
               <CampoArchivo
                 label="Foto del hero"

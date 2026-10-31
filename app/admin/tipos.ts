@@ -58,6 +58,7 @@ export interface DatosFormularioAdmin {
   contacto: { whatsapp: string; whatsappMensaje: string; email: string };
   fechas: FechaEditable[];
   ideas: IdeaEditable[];
+  avisoTexto: string;
   cintaTexto: string;
   cintaVelocidadSegundos: string;
   testimonios: TestimonioEditable[];

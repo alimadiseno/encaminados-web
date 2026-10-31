@@ -58,6 +58,7 @@ export interface FilaRetreat {
   whatsapp: string;
   whatsapp_mensaje: string;
   email: string;
+  aviso_texto: string | null;
   cinta_texto: string;
   cinta_velocidad_segundos: number;
   guias_intro: string;
@@ -148,6 +149,8 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
       titulo: i.titulo,
       descripcion: i.descripcion,
     })),
+    // `?? ""` por si el código se despliega antes de aplicar la migración 0015.
+    avisoTexto: retreat.aviso_texto ?? "",
     cintaTexto: retreat.cinta_texto,
     cintaVelocidadSegundos: retreat.cinta_velocidad_segundos,
     testimonios: ordenar(retreat.retreat_videos).map((v) => ({
