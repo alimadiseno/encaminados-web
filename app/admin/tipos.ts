@@ -59,6 +59,7 @@ export interface DatosFormularioAdmin {
   fechas: FechaEditable[];
   ideas: IdeaEditable[];
   avisoTexto: string;
+  avisoFechasTexto: string;
   cintaTexto: string;
   cintaVelocidadSegundos: string;
   testimonios: TestimonioEditable[];
