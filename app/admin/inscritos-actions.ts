@@ -96,6 +96,7 @@ export async function crearInscritoManual(
   const emailMarido = String(formData.get("emailMarido") ?? "").trim();
   const telefonoMarido = String(formData.get("telefonoMarido") ?? "").trim();
   const fechaElegida = String(formData.get("fechaElegida") ?? "").trim();
+  const retreatIdPedido = String(formData.get("retreatId") ?? "").trim();
 
   if (!nombreEsposa || !emailEsposa || !nombreMarido || !emailMarido || !fechaElegida) {
     return { error: "Nombre y correo de ambos, más la fecha, son obligatorios." };
@@ -103,12 +104,13 @@ export async function crearInscritoManual(
 
   const supabase = await getSupabaseAdminClient();
 
-  const { data: retreat, error: errorRetreat } = await supabase
-    .from("retreats")
-    .select("id")
-    .eq("slug", RETIRO_DESTACADO)
-    .single();
-  if (errorRetreat || !retreat) return { error: "No se encontró el retiro destacado." };
+  // El ciclo que se está viendo en el panel; sin él, el destacado.
+  const consulta = supabase.from("retreats").select("id");
+  const { data: retreat, error: errorRetreat } = await (retreatIdPedido
+    ? consulta.eq("id", retreatIdPedido)
+    : consulta.eq("slug", RETIRO_DESTACADO)
+  ).single();
+  if (errorRetreat || !retreat) return { error: "No se encontró el retiro." };
 
   const { error } = await supabase.from("inscritos").insert({
     retreat_id: retreat.id,

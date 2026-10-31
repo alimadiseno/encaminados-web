@@ -23,6 +23,7 @@ import { CampoTexto, CampoTextarea, CampoCheckbox, CampoArchivo } from "./Campo"
 import { ListaEditable } from "./ListaEditable";
 import InscritosView from "./InscritosView";
 import type { Inscrito } from "@/lib/inscritos";
+import type { RetiroResumen } from "@/data/retreats";
 
 function idCliente(): string {
   return crypto.randomUUID();
@@ -88,7 +89,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
   };
 }
 
-type Vista = "contenido" | "general" | "documentos" | "inscritos" | "seo";
+export type Vista = "contenido" | "general" | "documentos" | "inscritos" | "seo";
 type SeccionContenido =
   | "hero"
   | "ideas"
@@ -139,16 +140,23 @@ const estadoInicialGuardado: GuardarState = {};
 
 export default function RetreatEditor({
   retreat,
+  retiroInscritos,
+  retiros,
   inscritos,
   inscritosArchivados,
+  vistaInicial,
 }: {
   retreat: RetreatEvent;
+  /** Retiro cuyos inscritos se muestran — el destacado, salvo que se elija otro ciclo. */
+  retiroInscritos: RetreatEvent;
+  retiros: RetiroResumen[];
   inscritos: Inscrito[];
   inscritosArchivados: Inscrito[];
+  vistaInicial: Vista;
 }) {
   const [datos, setDatos] = useState<DatosFormularioAdmin>(() => aEditable(retreat));
   const [state, formAction, pending] = useActionState(guardarRetreat, estadoInicialGuardado);
-  const [vista, setVista] = useState<Vista>("contenido");
+  const [vista, setVista] = useState<Vista>(vistaInicial);
   const [seccion, setSeccion] = useState<SeccionContenido>("hero");
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -250,8 +258,11 @@ export default function RetreatEditor({
             <InscritosView
               inscritos={inscritos}
               inscritosArchivados={inscritosArchivados}
-              fechas={retreat.fechas.map((f) => f.label)}
-              retreatId={retreat.id}
+              fechas={retiroInscritos.fechas.map((f) => f.label)}
+              retreatId={retiroInscritos.id}
+              retiros={retiros}
+              retiroActual={retiroInscritos.slug}
+              retiroDestacado={retreat.slug}
             />
           )}
 

@@ -175,7 +175,7 @@ async function cargarRetreat(slug: string): Promise<RetreatEvent | undefined> {
   };
 }
 
-export const RETIRO_DESTACADO = "2026-segundo-semestre";
+export const RETIRO_DESTACADO = "2027-primer-semestre";
 
 export async function getFeaturedRetreat(): Promise<RetreatEvent> {
   const retreat = await cargarRetreat(RETIRO_DESTACADO);
@@ -189,6 +189,42 @@ export async function getFeaturedRetreat(): Promise<RetreatEvent> {
 
 export async function getRetreatBySlug(slug: string): Promise<RetreatEvent | undefined> {
   return cargarRetreat(slug);
+}
+
+export interface RetiroResumen {
+  slug: string;
+  /** Ej. "Abril 2027" u "Octubre y noviembre 2026", sacado de las fechas. */
+  etiqueta: string;
+}
+
+/** Todos los retiros, del más reciente al más antiguo — para el selector de ciclo en Inscritos. */
+export async function getRetiros(): Promise<RetiroResumen[]> {
+  const supabase = await getSupabaseClient();
+  const { data, error } = await supabase.from("retreats").select("slug, nombre, retreat_fechas ( fecha_inicio )");
+  if (error || !data) {
+    if (error) console.error("Error cargando la lista de retiros:", error.message);
+    return [];
+  }
+
+  const retiros = (data as { slug: string; nombre: string; retreat_fechas: { fecha_inicio: string }[] }[]).map((r) => {
+    const inicios = r.retreat_fechas.map((f) => f.fecha_inicio).sort();
+    return { slug: r.slug, primerInicio: inicios[0] ?? "", etiqueta: etiquetaDeCiclo(inicios) || r.slug };
+  });
+  retiros.sort((a, b) => b.primerInicio.localeCompare(a.primerInicio));
+  return retiros.map(({ slug, etiqueta }) => ({ slug, etiqueta }));
+}
+
+function etiquetaDeCiclo(iniciosOrdenados: string[]): string {
+  if (iniciosOrdenados.length === 0) return "";
+  const meses = [
+    ...new Set(
+      // T12:00 para que la zona horaria no corra la fecha al día (y mes) anterior.
+      iniciosOrdenados.map((f) => new Date(`${f}T12:00:00`).toLocaleDateString("es-CL", { month: "long" })),
+    ),
+  ];
+  const texto = meses.length > 1 ? `${meses.slice(0, -1).join(", ")} y ${meses.at(-1)}` : meses[0];
+  const anio = iniciosOrdenados.at(-1)!.slice(0, 4);
+  return `${texto.charAt(0).toUpperCase()}${texto.slice(1)} ${anio}`;
 }
 
 export function anioDelRetiro(retreat: RetreatEvent): string {

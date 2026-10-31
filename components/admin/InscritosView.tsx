@@ -8,7 +8,9 @@ import {
   restaurarInscrito,
   type InscritoActionState,
 } from "@/app/admin/inscritos-actions";
+import { useRouter } from "next/navigation";
 import type { EstadoPago, Inscrito } from "@/lib/inscritos";
+import type { RetiroResumen } from "@/data/retreats";
 import {
   ETIQUETA_ESTADO_PAGO,
   apellido,
@@ -847,7 +849,38 @@ function BotonExportacion({ retreatId, fechas }: { retreatId: string; fechas: st
   );
 }
 
-function FormularioNuevoInscrito({ fechas }: { fechas: string[] }) {
+/**
+ * Cambia de ciclo navegando a `/admin?retiro=<slug>` — la página trae del
+ * servidor los inscritos de ese retiro. Con un solo retiro no se muestra.
+ */
+function SelectorRetiro({ retiros, actual, destacado }: { retiros: RetiroResumen[]; actual: string; destacado: string }) {
+  const router = useRouter();
+  if (retiros.length < 2) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-bold tracking-[0.06em] text-ink/50 uppercase">Ciclo</p>
+      <div className="flex flex-wrap gap-2">
+        {retiros.map((r) => (
+          <button
+            key={r.slug}
+            type="button"
+            onClick={() => router.push(`/admin?retiro=${r.slug}`)}
+            className={claseBotonFiltro(r.slug === actual)}
+          >
+            {r.etiqueta}
+            {r.slug === destacado && " (actual)"}
+          </button>
+        ))}
+      </div>
+      {actual !== destacado && (
+        <p className="text-xs text-ink/60">Estás viendo un ciclo anterior. Los cambios que hagas acá quedan en ese ciclo.</p>
+      )}
+    </div>
+  );
+}
+
+function FormularioNuevoInscrito({ fechas, retreatId }: { fechas: string[]; retreatId: string }) {
   const [abierto, setAbierto] = useState(false);
   const estadoInicial: InscritoActionState = {};
   const [state, formAction, pending] = useActionState(crearInscritoManual, estadoInicial);
@@ -872,6 +905,8 @@ function FormularioNuevoInscrito({ fechas }: { fechas: string[] }) {
       }}
       className="flex flex-col gap-4 rounded-2xl bg-card p-5"
     >
+      {/* Se agrega al ciclo que se está viendo, no siempre al destacado. */}
+      <input type="hidden" name="retreatId" value={retreatId} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <fieldset className="flex flex-col gap-3">
           <legend className="text-xs font-semibold text-terracotta uppercase">Esposa</legend>
@@ -937,11 +972,17 @@ export default function InscritosView({
   inscritosArchivados,
   fechas,
   retreatId,
+  retiros,
+  retiroActual,
+  retiroDestacado,
 }: {
   inscritos: Inscrito[];
   inscritosArchivados: Inscrito[];
   fechas: string[];
   retreatId: string;
+  retiros: RetiroResumen[];
+  retiroActual: string;
+  retiroDestacado: string;
 }) {
   const [vista, setVista] = useState<"tabla" | "tarjetas">("tabla");
   const [filtroEstado, setFiltroEstado] = useState<EstadoPago | "todos">("todos");
@@ -1006,6 +1047,8 @@ export default function InscritosView({
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8">
       <h1 className="h2-section text-ink">Inscritos</h1>
+
+      <SelectorRetiro retiros={retiros} actual={retiroActual} destacado={retiroDestacado} />
 
         <BotonExportacion retreatId={retreatId} fechas={fechas} />
 
@@ -1159,7 +1202,7 @@ export default function InscritosView({
         )}
 
         <div className="flex flex-wrap gap-3">
-          <FormularioNuevoInscrito fechas={fechas} />
+          <FormularioNuevoInscrito fechas={fechas} retreatId={retreatId} />
           <BotonArchivados inscritosArchivados={inscritosArchivados} />
         </div>
     </div>
