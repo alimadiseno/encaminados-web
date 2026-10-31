@@ -70,6 +70,8 @@ export interface RetreatEvent {
   ideas: Idea[];
   /** Franja de aviso sobre el header (ej. cupos agotados); vacío = no se muestra. */
   avisoTexto: string;
+  /** Rectángulo sobre la tarjeta de fechas del hero (ej. un ciclo anterior agotado); vacío = no se muestra. */
+  avisoFechasTexto: string;
   /** Frase de la cinta ondulada animada entre "Qué es Encaminados" y los testimonios. */
   cintaTexto: string;
   /** Segundos que tarda la cinta en dar una vuelta completa — menos es más rápido. */

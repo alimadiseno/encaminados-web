@@ -157,6 +157,7 @@ export async function guardarRetreat(_prevState: GuardarState, formData: FormDat
         cupos_descripcion: datos.cuposDescripcion,
         inscripcion_url: datos.inscripcionUrl,
         aviso_texto: datos.avisoTexto.trim(),
+        aviso_fechas_texto: datos.avisoFechasTexto.trim(),
         cinta_texto: datos.cintaTexto,
         cinta_velocidad_segundos: cintaVelocidadSegundos,
         whatsapp: datos.contacto.whatsapp,

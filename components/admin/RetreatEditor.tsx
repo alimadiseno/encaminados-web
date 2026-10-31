@@ -54,6 +54,7 @@ function aEditable(retreat: RetreatEvent): DatosFormularioAdmin {
     fechas: retreat.fechas.map((f, i) => ({ clientId: `fecha-${i}`, label: f.label, start: f.start, end: f.end })),
     ideas: retreat.ideas.map((idea, i) => ({ clientId: `idea-${i}`, titulo: idea.titulo, descripcion: idea.descripcion })),
     avisoTexto: retreat.avisoTexto,
+    avisoFechasTexto: retreat.avisoFechasTexto,
     cintaTexto: retreat.cintaTexto,
     cintaVelocidadSegundos: String(retreat.cintaVelocidadSegundos),
     testimonios: retreat.testimonios.map((t) => ({
@@ -298,6 +299,11 @@ export default function RetreatEditor({
                 label="Aviso superior (franja sobre el menú; dejar vacío para ocultarla)"
                 value={datos.avisoTexto}
                 onChange={(v) => set("avisoTexto", v)}
+              />
+              <CampoTexto
+                label="Aviso sobre la tarjeta de fechas (ej. fechas anteriores agotadas; dejar vacío para ocultarlo)"
+                value={datos.avisoFechasTexto}
+                onChange={(v) => set("avisoFechasTexto", v)}
               />
               <CampoTextarea label="Texto del hero (subtítulo)" value={datos.bajada} onChange={(v) => set("bajada", v)} filas={2} />
               <CampoArchivo

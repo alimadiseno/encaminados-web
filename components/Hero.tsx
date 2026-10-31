@@ -36,7 +36,13 @@ export default function Hero({ retreat }: { retreat: RetreatEvent }) {
           </Reveal>
         </div>
 
-        <Reveal delay={200} className="w-full max-w-[332px] flex-none">
+        <Reveal delay={200} className="flex w-full max-w-[332px] flex-none flex-col items-center gap-3">
+          {/* Rectángulo y no píldora (rounded-full) a propósito: con ese color, una píldora se lee como botón. */}
+          {retreat.avisoFechasTexto && (
+            <p className="w-full rounded-[10px] bg-terracotta px-4 py-2.5 text-center font-body text-sm font-semibold tracking-[0.04em] text-peach">
+              {retreat.avisoFechasTexto}
+            </p>
+          )}
           <div className="flex w-full flex-col items-center gap-7 rounded-[20px] bg-cream/95 px-8 py-6 backdrop-blur-sm">
             <div className="flex w-full flex-col items-center gap-3.5">
               <p className="w-full text-center font-body text-base font-semibold text-terracotta">
