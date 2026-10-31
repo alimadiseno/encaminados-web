@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { cerrarSesion, iniciarSesion } from "@/lib/admin-auth";
+import { cerrarSesion, haySesionValida, iniciarSesion } from "@/lib/admin-auth";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 import { RETIRO_DESTACADO } from "@/data/retreats";
 import {
@@ -86,6 +86,9 @@ async function reemplazarTablaHija(
 }
 
 export async function guardarRetreat(_prevState: GuardarState, formData: FormData): Promise<GuardarState> {
+  // Las Server Actions son endpoints POST públicos: el chequeo de la página no las cubre.
+  if (!(await haySesionValida())) return { error: "Sesión expirada, vuelve a entrar." };
+
   const crudo = formData.get("datos");
   if (typeof crudo !== "string") {
     return { error: "Faltan los datos del formulario." };

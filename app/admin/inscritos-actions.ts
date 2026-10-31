@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { haySesionValida } from "@/lib/admin-auth";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 import { RETIRO_DESTACADO } from "@/data/retreats";
 import type { EstadoPago } from "@/lib/inscritos";
@@ -9,6 +10,10 @@ export interface InscritoActionState {
   error?: string;
 }
 
+// Las Server Actions son endpoints POST públicos: el chequeo de la página no las
+// cubre, así que cada acción que escribe verifica la sesión por su cuenta.
+const SESION_EXPIRADA: InscritoActionState = { error: "Sesión expirada, vuelve a entrar." };
+
 const ESTADOS_VALIDOS: EstadoPago[] = ["pendiente", "parcial", "pagado"];
 
 export async function actualizarInscrito(
@@ -16,6 +21,8 @@ export async function actualizarInscrito(
   _prevState: InscritoActionState,
   formData: FormData,
 ): Promise<InscritoActionState> {
+  if (!(await haySesionValida())) return SESION_EXPIRADA;
+
   const estadoPago = String(formData.get("estadoPago") ?? "");
   if (!ESTADOS_VALIDOS.includes(estadoPago as EstadoPago)) {
     return { error: "Estado de pago inválido." };
@@ -53,6 +60,8 @@ export async function actualizarInscrito(
  * archivados), pero queda recuperable desde la vista de "Archivados".
  */
 export async function archivarInscrito(id: string): Promise<InscritoActionState> {
+  if (!(await haySesionValida())) return SESION_EXPIRADA;
+
   const supabase = await getSupabaseAdminClient();
   const { error } = await supabase.from("inscritos").update({ archivado_en: new Date().toISOString() }).eq("id", id);
 
@@ -63,6 +72,8 @@ export async function archivarInscrito(id: string): Promise<InscritoActionState>
 }
 
 export async function restaurarInscrito(id: string): Promise<InscritoActionState> {
+  if (!(await haySesionValida())) return SESION_EXPIRADA;
+
   const supabase = await getSupabaseAdminClient();
   const { error } = await supabase.from("inscritos").update({ archivado_en: null }).eq("id", id);
 
@@ -76,6 +87,8 @@ export async function crearInscritoManual(
   _prevState: InscritoActionState,
   formData: FormData,
 ): Promise<InscritoActionState> {
+  if (!(await haySesionValida())) return SESION_EXPIRADA;
+
   const nombreEsposa = String(formData.get("nombreEsposa") ?? "").trim();
   const emailEsposa = String(formData.get("emailEsposa") ?? "").trim();
   const telefonoEsposa = String(formData.get("telefonoEsposa") ?? "").trim();
